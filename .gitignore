@@ -1,0 +1,16 @@
+# Segredos (logins senhas etc NÃO ENVIAR GITHUB)
+.env
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ
+.idea/
+*.iml
+
+# Logs e sistema
+*.log
+logs/
+.DS_Store
+Thumbs.db
