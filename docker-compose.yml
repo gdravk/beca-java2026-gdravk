@@ -1,0 +1,40 @@
+services:
+  users-db:
+    image: postgres:16-alpine
+    container_name: users-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${USERS_DB_NAME}
+      POSTGRES_USER: ${USERS_DB_USER}
+      POSTGRES_PASSWORD: ${USERS_DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - users-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  transactions-db:
+    image: postgres:16-alpine
+    container_name: transactions-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${TRANSACTIONS_DB_NAME}
+      POSTGRES_USER: ${TRANSACTIONS_DB_USER}
+      POSTGRES_PASSWORD: ${TRANSACTIONS_DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - transactions-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  users-db-data:
+  transactions-db-data:
