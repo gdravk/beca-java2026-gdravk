@@ -1,20 +1,21 @@
-package br.com.gabrieloliveira.usuarios.entity;
+package br.com.gabrieloliveira.usuarios.adapter.out.persistence;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
 
 // essa classe vira a tabela "usuarios" no banco
-// cada atributo aqui embaixo vira uma coluna, e cada objeto Usuario vira uma linha
+// cada atributo vira uma coluna, e cada objeto vira uma linha
+// ela existe so aqui no adaptador: o resto do sistema usa o Usuario do dominio
+// o UsuarioPersistenceMapper faz a traducao entre os dois
 @Entity
 @Table(name = "usuarios")
-public class Usuario {
+public class UsuarioEntity {
 
     // chave primaria, quem gera o numero e o proprio postgres (1, 2, 3...)
     @Id
@@ -32,7 +33,7 @@ public class Usuario {
     @Column(nullable = false, unique = true, length = 11)
     private String cpf;
 
-    // aqui nunca fica a senha "pura", so o hash dela (o service cuida disso)
+    // guarda o hash da senha, nunca a senha pura
     @Column(nullable = false)
     private String senha;
 
@@ -41,13 +42,7 @@ public class Usuario {
     private LocalDateTime dataCriacao;
 
     // o jpa precisa de um construtor vazio pra conseguir montar o objeto quando le do banco
-    public Usuario() {
-    }
-
-    // roda sozinho logo antes do primeiro insert, entao ninguem precisa lembrar de preencher a data
-    @PrePersist
-    public void prePersist() {
-        this.dataCriacao = LocalDateTime.now();
+    public UsuarioEntity() {
     }
 
     public Long getId() {

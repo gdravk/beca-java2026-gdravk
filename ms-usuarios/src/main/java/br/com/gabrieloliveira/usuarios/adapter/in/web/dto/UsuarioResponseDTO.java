@@ -1,4 +1,4 @@
-package br.com.gabrieloliveira.usuarios.dto;
+package br.com.gabrieloliveira.usuarios.adapter.in.web.dto;
 
 import java.time.LocalDateTime;
 

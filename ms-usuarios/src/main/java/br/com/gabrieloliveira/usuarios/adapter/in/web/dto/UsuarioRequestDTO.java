@@ -1,4 +1,4 @@
-package br.com.gabrieloliveira.usuarios.dto;
+package br.com.gabrieloliveira.usuarios.adapter.in.web.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 // o que o cliente manda no corpo (json) do POST e do PUT
-// as anotacoes de validacao barram dados ruins antes de chegar no service
+// as anotacoes de validacao barram dados ruins antes de chegar nos casos de uso
 // se algo falhar aqui, a api responde 400 com a lista dos campos errados
 public class UsuarioRequestDTO {
 

@@ -1,7 +1,10 @@
-package br.com.gabrieloliveira.usuarios.exception;
+package br.com.gabrieloliveira.usuarios.adapter.in.web;
 
-import br.com.gabrieloliveira.usuarios.dto.ErroResponseDTO;
+import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.ErroResponseDTO;
+import br.com.gabrieloliveira.usuarios.domain.exception.RecursoNaoEncontradoException;
+import br.com.gabrieloliveira.usuarios.domain.exception.RegraNegocioException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -17,6 +20,7 @@ import java.util.Map;
 // essa classe fica "escutando" os erros que escapam dos controllers
 // cada metodo com @ExceptionHandler cuida de um tipo de erro e monta a resposta json certinha
 // sem ela, o cliente receberia um erro 500 generico e feio
+// ela fica no adaptador web porque transformar erro em status http e coisa do mundo http
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -32,6 +36,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErroResponseDTO> tratarRegraNegocio(RegraNegocioException ex,
                                                              HttpServletRequest request) {
         return montarResposta(HttpStatus.CONFLICT, ex.getMessage(), request, null);
+    }
+
+    // 409 tambem: rede de seguranca pro caso raro de duas requisicoes cadastrarem o mesmo email
+    // ao mesmo tempo e as duas passarem pela conferencia do caso de uso
+    // ai quem barra e o unique do banco, e a gente devolve 409 em vez de 500
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErroResponseDTO> tratarDadoDuplicadoNoBanco(DataIntegrityViolationException ex,
+                                                                     HttpServletRequest request) {
+        return montarResposta(HttpStatus.CONFLICT, "ja existe um registro com esses dados (email ou cpf repetido)",
+                request, null);
     }
 
     // 400: alguma validacao do UsuarioRequestDTO falhou (@NotBlank, @Email...)
@@ -54,7 +68,7 @@ public class GlobalExceptionHandler {
         return montarResposta(HttpStatus.BAD_REQUEST, "o corpo da requisicao esta mal formatado", request, null);
     }
 
-    // 400: mandaram um texto onde era pra ser numero, tipo GET /users/abc
+    // 400: mandaram um texto onde era pra ser numero, tipo GET /users/abc ou ?pagina=abc
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErroResponseDTO> tratarTipoInvalido(MethodArgumentTypeMismatchException ex,
                                                              HttpServletRequest request) {
