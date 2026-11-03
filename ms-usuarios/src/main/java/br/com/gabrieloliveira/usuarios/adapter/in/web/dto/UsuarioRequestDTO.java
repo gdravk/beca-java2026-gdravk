@@ -44,8 +44,16 @@ public class UsuarioRequestDTO {
         return email;
     }
 
+    // o jackson chama esse setter quando le o json, ANTES das validacoes (@Email, @NotBlank) rodarem
+    // por isso o trim e feito aqui tambem: sem ele, " ana@email.com " (com espaco, comum ao copiar e colar)
+    // seria barrado pelo @Email com erro 400, e nem chegaria na normalizacao do dominio
+    // o resto da normalizacao (deixar em minusculo) fica no Usuario do dominio
     public void setEmail(String email) {
-        this.email = email;
+        if (email == null) {
+            this.email = null;
+        } else {
+            this.email = email.trim();
+        }
     }
 
     public String getCpf() {
