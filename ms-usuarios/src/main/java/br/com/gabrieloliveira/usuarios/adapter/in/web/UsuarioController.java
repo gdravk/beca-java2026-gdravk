@@ -3,6 +3,7 @@ package br.com.gabrieloliveira.usuarios.adapter.in.web;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.PaginaResponseDTO;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.UsuarioRequestDTO;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.UsuarioResponseDTO;
+import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.UsuarioUpdateRequestDTO;
 import br.com.gabrieloliveira.usuarios.application.port.in.AtualizarUsuarioUseCase;
 import br.com.gabrieloliveira.usuarios.application.port.in.BuscarUsuarioUseCase;
 import br.com.gabrieloliveira.usuarios.application.port.in.CriarUsuarioUseCase;
@@ -81,9 +82,11 @@ public class UsuarioController {
     }
 
     // PUT /users/{id} -> atualiza um usuario, responde 200
+    // usa o UsuarioUpdateRequestDTO (e nao o UsuarioRequestDTO do cadastro) porque aqui a senha e opcional:
+    // se o json nao trouxer "senha", a senha atual e mantida
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> atualizar(@PathVariable Long id,
-                                                        @Valid @RequestBody UsuarioRequestDTO dto) {
+                                                        @Valid @RequestBody UsuarioUpdateRequestDTO dto) {
         Usuario dadosNovos = usuarioWebMapper.paraDominio(dto);
         Usuario atualizado = atualizarUsuarioUseCase.atualizar(id, dadosNovos);
         return ResponseEntity.ok(usuarioWebMapper.paraResponse(atualizado));

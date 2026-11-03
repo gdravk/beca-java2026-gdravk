@@ -38,7 +38,14 @@ public class AtualizarUsuarioService implements AtualizarUsuarioUseCase {
         usuario.setNome(dadosNovos.getNome());
         usuario.setEmail(dadosNovos.getEmail());
         usuario.setCpf(dadosNovos.getCpf());
-        usuario.setSenha(senhaEncoderPort.codificar(dadosNovos.getSenha()));
+
+        // a senha e opcional no update:
+        // - veio senha nova -> gera o hash dela e troca
+        // - nao veio (null) -> nao mexe, o usuario continua com o hash que ja estava no banco
+        // antes a senha era obrigatoria e recriptografada em todo update, entao nem dava pra mudar so o nome
+        if (dadosNovos.getSenha() != null) {
+            usuario.setSenha(senhaEncoderPort.codificar(dadosNovos.getSenha()));
+        }
 
         return usuarioRepositoryPort.salvar(usuario);
     }
