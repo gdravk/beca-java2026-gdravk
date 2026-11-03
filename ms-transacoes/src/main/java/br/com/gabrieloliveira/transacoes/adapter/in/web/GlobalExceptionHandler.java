@@ -4,6 +4,7 @@ import br.com.gabrieloliveira.transacoes.adapter.in.web.dto.ErroResponseDTO;
 import br.com.gabrieloliveira.transacoes.domain.exception.ParametroInvalidoException;
 import br.com.gabrieloliveira.transacoes.domain.exception.RecursoNaoEncontradoException;
 import br.com.gabrieloliveira.transacoes.domain.exception.RegraNegocioException;
+import br.com.gabrieloliveira.transacoes.domain.exception.ServicoExternoIndisponivelException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErroResponseDTO> tratarParametroInvalido(ParametroInvalidoException ex,
                                                                   HttpServletRequest request) {
         return montarResposta(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null);
+    }
+
+    // 503 (service unavailable): um servico externo (api mock, brasilapi) nao respondeu
+    // aparece na rota de saldo; na criacao de transacao isso nao chega aqui, porque o caso de uso
+    // trata a excecao e grava a transacao como REJECTED com o motivo
+    // a mensagem tecnica da excecao (com detalhes da conexao) nao vai pro cliente, so pro log
+    @ExceptionHandler(ServicoExternoIndisponivelException.class)
+    public ResponseEntity<ErroResponseDTO> tratarServicoExternoIndisponivel(ServicoExternoIndisponivelException ex,
+                                                                           HttpServletRequest request) {
+        return montarResposta(HttpStatus.SERVICE_UNAVAILABLE,
+                "o servico de saldo esta indisponivel no momento, tente novamente mais tarde",
+                request, null);
     }
 
     // bean validation do corpo: devolve todos os campos invalidos de uma vez
