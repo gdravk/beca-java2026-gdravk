@@ -1,6 +1,7 @@
 package br.com.gabrieloliveira.transacoes.config;
 
 import br.com.gabrieloliveira.transacoes.application.port.in.BuscarTransacaoUseCase;
+import br.com.gabrieloliveira.transacoes.application.port.in.ConsultarSaldoUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.in.CriarTransacaoUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.in.EstornarTransacaoUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.in.ListarTransacoesUseCase;
@@ -8,6 +9,7 @@ import br.com.gabrieloliveira.transacoes.application.port.out.CambioPort;
 import br.com.gabrieloliveira.transacoes.application.port.out.SaldoContaPort;
 import br.com.gabrieloliveira.transacoes.application.port.out.TransacaoRepositoryPort;
 import br.com.gabrieloliveira.transacoes.application.usecase.BuscarTransacaoService;
+import br.com.gabrieloliveira.transacoes.application.usecase.ConsultarSaldoService;
 import br.com.gabrieloliveira.transacoes.application.usecase.CriarTransacaoService;
 import br.com.gabrieloliveira.transacoes.application.usecase.EstornarTransacaoService;
 import br.com.gabrieloliveira.transacoes.application.usecase.ListarTransacoesService;
@@ -42,6 +44,11 @@ public class BeanConfig {
     @Bean
     public ListarTransacoesUseCase listarTransacoesUseCase(TransacaoRepositoryPort transacaoRepositoryPort) {
         return new ListarTransacoesService(transacaoRepositoryPort);
+    }
+
+    @Bean
+    public ConsultarSaldoUseCase consultarSaldoUseCase(SaldoContaPort saldoContaPort) {
+        return new ConsultarSaldoService(saldoContaPort);
     }
 
     @Bean
