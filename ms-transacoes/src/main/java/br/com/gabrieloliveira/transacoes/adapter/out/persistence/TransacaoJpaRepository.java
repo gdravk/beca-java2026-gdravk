@@ -41,4 +41,21 @@ public interface TransacaoJpaRepository extends JpaRepository<TransacaoEntity, L
                             @Param("ate") LocalDateTime ate);
 
     boolean existsByTransacaoOriginalIdAndStatus(Long transacaoOriginalId, StatusTransacao status);
+
+    // despesas da analise (pedido 5): saidas aprovadas do usuario no periodo, tirando os estornos
+    // - "t.transacaoOriginalId is null": a propria transacao nao e um estorno
+    // - "not exists (...)": nao existe um estorno aprovado apontando pra ela (o dinheiro nao voltou)
+    //   o "not exists" e uma subconsulta: pra cada transacao t, procura outra transacao e que seja estorno de t
+    @Query("select t from TransacaoEntity t"
+            + " where t.usuarioId = :usuarioId and t.status = :status and t.tipo in :tipos"
+            + " and t.transacaoOriginalId is null"
+            + " and t.dataHora >= :de and t.dataHora < :ate"
+            + " and not exists (select e.id from TransacaoEntity e"
+            + "   where e.transacaoOriginalId = t.id and e.status = :status)"
+            + " order by t.dataHora asc")
+    List<TransacaoEntity> listarDespesas(@Param("usuarioId") Long usuarioId,
+                                         @Param("status") StatusTransacao status,
+                                         @Param("tipos") Collection<TipoTransacao> tipos,
+                                         @Param("de") LocalDateTime de,
+                                         @Param("ate") LocalDateTime ate);
 }

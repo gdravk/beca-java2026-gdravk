@@ -1,5 +1,6 @@
 package br.com.gabrieloliveira.transacoes.config;
 
+import br.com.gabrieloliveira.transacoes.application.port.in.AnalisarDespesasUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.in.BuscarTransacaoUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.in.ConsultarSaldoUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.in.CriarTransacaoUseCase;
@@ -8,15 +9,19 @@ import br.com.gabrieloliveira.transacoes.application.port.in.ListarTransacoesUse
 import br.com.gabrieloliveira.transacoes.application.port.out.CambioPort;
 import br.com.gabrieloliveira.transacoes.application.port.out.SaldoContaPort;
 import br.com.gabrieloliveira.transacoes.application.port.out.TransacaoRepositoryPort;
+import br.com.gabrieloliveira.transacoes.application.usecase.AnalisarDespesasService;
 import br.com.gabrieloliveira.transacoes.application.usecase.BuscarTransacaoService;
 import br.com.gabrieloliveira.transacoes.application.usecase.ConsultarSaldoService;
 import br.com.gabrieloliveira.transacoes.application.usecase.CriarTransacaoService;
 import br.com.gabrieloliveira.transacoes.application.usecase.EstornarTransacaoService;
 import br.com.gabrieloliveira.transacoes.application.usecase.ListarTransacoesService;
 import br.com.gabrieloliveira.transacoes.application.usecase.PreenchedorDeCotacoes;
+import br.com.gabrieloliveira.transacoes.domain.service.AnalisadorDeDespesas;
 import br.com.gabrieloliveira.transacoes.domain.service.ValidadorDeTransacao;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.time.Clock;
 
 // monta o nucleo da aplicacao: o dominio e os casos de uso sao java puro, sem @Service,
 // entao sao criados aqui e recebem as implementacoes das portas de saida (adaptadores @Component)
@@ -60,6 +65,25 @@ public class BeanConfig {
     @Bean
     public ConsultarSaldoUseCase consultarSaldoUseCase(SaldoContaPort saldoContaPort) {
         return new ConsultarSaldoService(saldoContaPort);
+    }
+
+    @Bean
+    public AnalisadorDeDespesas analisadorDeDespesas() {
+        return new AnalisadorDeDespesas();
+    }
+
+    // o relogio do sistema, usado pela analise pra saber qual e o "mes atual"
+    // fica num bean pra que os testes possam usar um relogio parado no lugar dele
+    @Bean
+    public Clock relogio() {
+        return Clock.systemDefaultZone();
+    }
+
+    @Bean
+    public AnalisarDespesasUseCase analisarDespesasUseCase(TransacaoRepositoryPort transacaoRepositoryPort,
+                                                           AnalisadorDeDespesas analisadorDeDespesas,
+                                                           Clock relogio) {
+        return new AnalisarDespesasService(transacaoRepositoryPort, analisadorDeDespesas, relogio);
     }
 
     @Bean

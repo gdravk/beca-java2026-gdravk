@@ -26,4 +26,9 @@ public interface TransacaoRepositoryPort {
 
     // true se a transacao ja tem um estorno aprovado
     boolean existeEstornoAprovado(Long idTransacaoOriginal);
+
+    // despesas do usuario no periodo [de, ate), usadas na analise de despesas
+    // despesa = saida (retirada, transferencia, compra) aprovada, que nao e estorno e que nao foi estornada
+    // ordenadas da mais antiga pra mais nova
+    List<Transacao> listarDespesas(Long usuarioId, LocalDateTime de, LocalDateTime ate);
 }
