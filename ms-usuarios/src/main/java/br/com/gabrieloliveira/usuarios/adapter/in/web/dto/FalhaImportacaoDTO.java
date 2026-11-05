@@ -1,0 +1,37 @@
+package br.com.gabrieloliveira.usuarios.adapter.in.web.dto;
+
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+// uma linha que nao entrou na importacao, do jeito que vai no json de resposta
+// ex: { "linha": 12, "motivo": "ja existe um usuario cadastrado com esse email" }
+// o @JsonPropertyOrder garante essa ordem no json (sem ele o jackson colocaria em ordem alfabetica)
+@JsonPropertyOrder({"linha", "motivo"})
+public class FalhaImportacaoDTO {
+
+    private int linha;
+    private String motivo;
+
+    public FalhaImportacaoDTO() {
+    }
+
+    public FalhaImportacaoDTO(int linha, String motivo) {
+        this.linha = linha;
+        this.motivo = motivo;
+    }
+
+    public int getLinha() {
+        return linha;
+    }
+
+    public void setLinha(int linha) {
+        this.linha = linha;
+    }
+
+    public String getMotivo() {
+        return motivo;
+    }
+
+    public void setMotivo(String motivo) {
+        this.motivo = motivo;
+    }
+}

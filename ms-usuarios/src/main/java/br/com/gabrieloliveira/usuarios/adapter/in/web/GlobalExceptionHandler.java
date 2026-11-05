@@ -1,5 +1,6 @@
 package br.com.gabrieloliveira.usuarios.adapter.in.web;
 
+import br.com.gabrieloliveira.usuarios.adapter.in.web.csv.ArquivoCsvInvalidoException;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.ErroResponseDTO;
 import br.com.gabrieloliveira.usuarios.domain.exception.RecursoNaoEncontradoException;
 import br.com.gabrieloliveira.usuarios.domain.exception.RegraNegocioException;
@@ -9,10 +10,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -74,6 +78,39 @@ public class GlobalExceptionHandler {
                                                              HttpServletRequest request) {
         String mensagem = "o valor '" + ex.getValue() + "' nao e valido para o parametro '" + ex.getName() + "'";
         return montarResposta(HttpStatus.BAD_REQUEST, mensagem, request, null);
+    }
+
+    // 400: problema no arquivo inteiro da importacao (vazio, nao e .csv, cabecalho errado, nao e utf-8...)
+    // lembrando: erro de uma linha so nao cai aqui, ele aparece no resumo da importacao
+    @ExceptionHandler(ArquivoCsvInvalidoException.class)
+    public ResponseEntity<ErroResponseDTO> tratarArquivoInvalido(ArquivoCsvInvalidoException ex,
+                                                                HttpServletRequest request) {
+        return montarResposta(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null);
+    }
+
+    // 400: chamaram o POST /users/import sem mandar o arquivo no campo "file" do form-data
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ErroResponseDTO> tratarArquivoFaltando(MissingServletRequestPartException ex,
+                                                                HttpServletRequest request) {
+        String mensagem = "envie o arquivo no campo '" + ex.getRequestPartName() + "' (Body -> form-data, tipo File)";
+        return montarResposta(HttpStatus.BAD_REQUEST, mensagem, request, null);
+    }
+
+    // 413: o arquivo passou do tamanho maximo configurado no application.properties (spring.servlet.multipart)
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErroResponseDTO> tratarArquivoGrandeDemais(MaxUploadSizeExceededException ex,
+                                                                    HttpServletRequest request) {
+        return montarResposta(HttpStatus.CONTENT_TOO_LARGE, "o arquivo pode ter no maximo 2MB", request, null);
+    }
+
+    // 415: mandaram um formato que a rota nao aceita
+    // ex: json no /users/import (que espera form-data) ou form-data no POST /users (que espera json)
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ErroResponseDTO> tratarFormatoNaoSuportado(HttpMediaTypeNotSupportedException ex,
+                                                                    HttpServletRequest request) {
+        String mensagem = "o formato '" + ex.getContentType() + "' nao e aceito nesta rota, aceitos: "
+                + ex.getSupportedMediaTypes();
+        return montarResposta(HttpStatus.UNSUPPORTED_MEDIA_TYPE, mensagem, request, null);
     }
 
     // metodo de apoio pra nao repetir o mesmo codigo em todos os handlers acima

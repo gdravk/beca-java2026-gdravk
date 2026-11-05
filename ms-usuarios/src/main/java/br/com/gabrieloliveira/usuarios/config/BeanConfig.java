@@ -4,6 +4,7 @@ import br.com.gabrieloliveira.usuarios.application.port.in.AtualizarUsuarioUseCa
 import br.com.gabrieloliveira.usuarios.application.port.in.BuscarUsuarioUseCase;
 import br.com.gabrieloliveira.usuarios.application.port.in.CriarUsuarioUseCase;
 import br.com.gabrieloliveira.usuarios.application.port.in.ExcluirUsuarioUseCase;
+import br.com.gabrieloliveira.usuarios.application.port.in.ImportarUsuariosUseCase;
 import br.com.gabrieloliveira.usuarios.application.port.in.ListarUsuariosUseCase;
 import br.com.gabrieloliveira.usuarios.application.port.out.SenhaEncoderPort;
 import br.com.gabrieloliveira.usuarios.application.port.out.UsuarioRepositoryPort;
@@ -11,6 +12,7 @@ import br.com.gabrieloliveira.usuarios.application.usecase.AtualizarUsuarioServi
 import br.com.gabrieloliveira.usuarios.application.usecase.BuscarUsuarioService;
 import br.com.gabrieloliveira.usuarios.application.usecase.CriarUsuarioService;
 import br.com.gabrieloliveira.usuarios.application.usecase.ExcluirUsuarioService;
+import br.com.gabrieloliveira.usuarios.application.usecase.ImportarUsuariosService;
 import br.com.gabrieloliveira.usuarios.application.usecase.ListarUsuariosService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,5 +50,12 @@ public class BeanConfig {
     @Bean
     public ExcluirUsuarioUseCase excluirUsuarioUseCase(UsuarioRepositoryPort usuarioRepositoryPort) {
         return new ExcluirUsuarioService(usuarioRepositoryPort);
+    }
+
+    // a importacao recebe o caso de uso de criar (o bean de cima), e nao o repositorio:
+    // assim cada linha do csv passa pelas mesmas regras do POST /users, sem repetir codigo
+    @Bean
+    public ImportarUsuariosUseCase importarUsuariosUseCase(CriarUsuarioUseCase criarUsuarioUseCase) {
+        return new ImportarUsuariosService(criarUsuarioUseCase);
     }
 }
