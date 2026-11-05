@@ -19,6 +19,9 @@ import br.com.gabrieloliveira.usuarios.application.usecase.VerificarCredenciaisS
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Clock;
+import java.time.ZoneId;
+
 // aqui e onde as pecas se encaixam
 // os casos de uso sao java puro (sem @Service), entao o spring nao cria eles sozinho
 // cada metodo @Bean abaixo cria um caso de uso e entrega pra ele as portas de saida que ele precisa
@@ -27,10 +30,19 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class BeanConfig {
 
+    // o relogio da aplicacao, sempre no fuso de brasilia (igual ao ms2)
+    // sem fixar o fuso, num container em utc a data de criacao seria a de londres
+    // fica num bean pra que os testes possam usar um relogio parado no lugar dele
+    @Bean
+    public Clock relogio() {
+        return Clock.system(ZoneId.of("America/Sao_Paulo"));
+    }
+
     @Bean
     public CriarUsuarioUseCase criarUsuarioUseCase(UsuarioRepositoryPort usuarioRepositoryPort,
-                                                   SenhaEncoderPort senhaEncoderPort) {
-        return new CriarUsuarioService(usuarioRepositoryPort, senhaEncoderPort);
+                                                   SenhaEncoderPort senhaEncoderPort,
+                                                   Clock relogio) {
+        return new CriarUsuarioService(usuarioRepositoryPort, senhaEncoderPort, relogio);
     }
 
     @Bean

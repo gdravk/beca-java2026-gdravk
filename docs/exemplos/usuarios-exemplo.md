@@ -2,6 +2,8 @@
 
 Arquivo de exemplo: [`usuarios-exemplo.csv`](usuarios-exemplo.csv), enviado em `POST /users/import` (multipart/form-data, campo `file`).
 
+A rota exige login (autenticação básica com e-mail e senha de um usuário já cadastrado). No Swagger, use o botão **Authorize** antes de enviar; no Postman, a aba **Authorization → Basic Auth**. Limites: até 1000 usuários e 2 MB por arquivo.
+
 ## Formato
 
 - **Separador:** ponto e vírgula (`;`). O Excel em português usa esse separador, e assim um nome ou endereço com vírgula não quebra a coluna.

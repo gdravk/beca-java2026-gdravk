@@ -10,6 +10,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -44,7 +49,9 @@ class CriarUsuarioServiceTest {
     // criamos o service "na mao", igual o BeanConfig faz na aplicacao, so que entregando os mocks
     @BeforeEach
     void setUp() {
-        criarUsuarioService = new CriarUsuarioService(usuarioRepositoryPort, senhaEncoderPort);
+        // relogio parado em 06/11/2026 01:00 em utc, que no brasil ainda e 05/11 as 22h
+        Clock relogio = Clock.fixed(Instant.parse("2026-11-06T01:00:00Z"), ZoneId.of("America/Sao_Paulo"));
+        criarUsuarioService = new CriarUsuarioService(usuarioRepositoryPort, senhaEncoderPort, relogio);
     }
 
     @Test
@@ -69,6 +76,8 @@ class CriarUsuarioServiceTest {
         assertEquals(1L, criado.getId());
         assertEquals("hash-da-senha", criado.getSenha());
         assertNotNull(criado.getDataCriacao());
+        // a data de criacao e a de brasilia (05/11 as 22h), e nao a de utc (06/11 a 01h)
+        assertEquals(LocalDateTime.of(2026, 11, 5, 22, 0), criado.getDataCriacao());
         // verify confere se um metodo do mock foi chamado; aqui: o salvar foi chamado uma vez
         verify(usuarioRepositoryPort).salvar(novo);
     }
