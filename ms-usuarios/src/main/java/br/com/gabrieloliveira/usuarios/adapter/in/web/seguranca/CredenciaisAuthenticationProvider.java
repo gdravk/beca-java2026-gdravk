@@ -7,7 +7,6 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -20,7 +19,10 @@ import java.util.List;
 //   assim a regra de login fica num lugar so
 // - deu certo: devolvemos um "Authentication" com o UsuarioAutenticado dentro
 // - deu errado: lancamos BadCredentialsException, e o spring responde 401
-@Component
+//
+// nao tem @Component de proposito (ajuste da revisao do professor): quem cria essa classe com new
+// e o SecurityConfig; como bean, o spring registrava o provider duas vezes e, com a senha errada,
+// conferia o bcrypt duas vezes na mesma requisicao
 public class CredenciaisAuthenticationProvider implements AuthenticationProvider {
 
     private final VerificarCredenciaisUseCase verificarCredenciaisUseCase;

@@ -2,8 +2,11 @@ package br.com.gabrieloliveira.transacoes.config;
 
 import br.com.gabrieloliveira.transacoes.adapter.in.web.seguranca.ErroDeSegurancaHandler;
 import br.com.gabrieloliveira.transacoes.adapter.in.web.seguranca.Ms1AuthenticationProvider;
+import br.com.gabrieloliveira.transacoes.application.port.in.AutenticarUsuarioUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -16,9 +19,17 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 public class SecurityConfig {
 
+    // o "gerente de autenticacao", com o nosso provider criado aqui com new (e nao como @Component):
+    // assim ele existe uma vez so, e cada login errado pergunta ao ms1 uma vez, e nao duas
+    // ter esse bean tambem desliga o usuario padrao "user" com senha gerada que o spring boot criaria sozinho
+    @Bean
+    public AuthenticationManager authenticationManager(AutenticarUsuarioUseCase autenticarUsuarioUseCase) {
+        return new ProviderManager(new Ms1AuthenticationProvider(autenticarUsuarioUseCase));
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   Ms1AuthenticationProvider ms1AuthenticationProvider,
+                                                   AuthenticationManager authenticationManager,
                                                    ErroDeSegurancaHandler erroDeSegurancaHandler) throws Exception {
         http
                 // api rest sem sessao de navegador: csrf desligado para os POST funcionarem
@@ -33,7 +44,7 @@ public class SecurityConfig {
                 .exceptionHandling(erros -> erros
                         .authenticationEntryPoint(erroDeSegurancaHandler)
                         .accessDeniedHandler(erroDeSegurancaHandler))
-                .authenticationProvider(ms1AuthenticationProvider);
+                .authenticationManager(authenticationManager);
 
         return http.build();
     }

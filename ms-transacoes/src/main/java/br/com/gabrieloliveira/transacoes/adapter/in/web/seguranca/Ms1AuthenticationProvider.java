@@ -8,7 +8,6 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -20,7 +19,10 @@ import java.util.List;
 // 3. login certo: guarda o UsuarioAutenticado (com o id do usuario) e a requisicao segue pro controller
 // 4. login errado: BadCredentialsException -> 401
 // 5. ms1 fora do ar: AuthenticationServiceException -> 503 (ver GlobalExceptionHandler)
-@Component
+//
+// nao tem @Component de proposito (ajuste da revisao do professor): quem cria essa classe com new
+// e o SecurityConfig; como bean, o spring registrava o provider duas vezes e, com a senha errada,
+// perguntava ao ms1 duas vezes na mesma requisicao
 public class Ms1AuthenticationProvider implements AuthenticationProvider {
 
     private final AutenticarUsuarioUseCase autenticarUsuarioUseCase;

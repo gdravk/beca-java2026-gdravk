@@ -5,6 +5,7 @@ import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.ImportacaoResultadoDTO
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.PaginaResponseDTO;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.UsuarioRequestDTO;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.UsuarioResponseDTO;
+import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.UsuarioResumoResponseDTO;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.UsuarioUpdateRequestDTO;
 import br.com.gabrieloliveira.usuarios.domain.model.FalhaImportacao;
 import br.com.gabrieloliveira.usuarios.domain.model.Pagina;
@@ -72,10 +73,12 @@ public class UsuarioWebMapper {
     }
 
     // converte a pagina inteira, usuario por usuario
-    public PaginaResponseDTO<UsuarioResponseDTO> paraPaginaResponse(Pagina<Usuario> pagina) {
-        List<UsuarioResponseDTO> conteudo = new ArrayList<>();
+    // na listagem cada usuario vai no formato resumido, sem cpf (ver UsuarioResumoResponseDTO)
+    public PaginaResponseDTO<UsuarioResumoResponseDTO> paraPaginaResponse(Pagina<Usuario> pagina) {
+        List<UsuarioResumoResponseDTO> conteudo = new ArrayList<>();
         for (Usuario usuario : pagina.getConteudo()) {
-            conteudo.add(paraResponse(usuario));
+            conteudo.add(new UsuarioResumoResponseDTO(usuario.getId(), usuario.getNome(), usuario.getEmail(),
+                    usuario.getDataCriacao()));
         }
 
         return new PaginaResponseDTO<>(

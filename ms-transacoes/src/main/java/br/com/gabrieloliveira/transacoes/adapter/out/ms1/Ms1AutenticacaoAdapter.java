@@ -24,10 +24,20 @@ import java.util.Optional;
 @Component
 public class Ms1AutenticacaoAdapter implements AutenticacaoPort {
 
+    // nome do cabecalho onde vai a chave interna (o mesmo que o ms1 espera)
+    private static final String CABECALHO_CHAVE_INTERNA = "X-Chave-Interna";
+
     private final RestClient restClient;
 
+    // segredo compartilhado com o ms1 (variavel MS1_CHAVE_INTERNA do .env)
+    // sem ele o ms1 recusa o POST /auth/verificar com 403 (ajuste da revisao do professor:
+    // a rota deixou de ser aberta pra qualquer um testar senhas)
+    private final String chaveInterna;
+
     public Ms1AutenticacaoAdapter(@Value("${ms1.base-url}") String baseUrl,
-                                  @Value("${ms1.timeout-ms}") int timeoutMs) {
+                                  @Value("${ms1.timeout-ms}") int timeoutMs,
+                                  @Value("${ms1.chave-interna}") String chaveInterna) {
+        this.chaveInterna = chaveInterna;
         // mesmos tempos maximos de espera usados na api mock: sem eles, com o ms1 travado,
         // toda requisicao do ms2 ficaria pendurada esperando
         SimpleClientHttpRequestFactory fabrica = new SimpleClientHttpRequestFactory();
@@ -46,6 +56,7 @@ public class Ms1AutenticacaoAdapter implements AutenticacaoPort {
         try {
             resposta = restClient.post()
                     .uri("/auth/verificar")
+                    .header(CABECALHO_CHAVE_INTERNA, chaveInterna)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(new CredenciaisMs1RequestDTO(email, senha))
                     .retrieve()
@@ -56,6 +67,8 @@ public class Ms1AutenticacaoAdapter implements AutenticacaoPort {
             return Optional.empty();
         } catch (RestClientException e) {
             // ms1 fora do ar, demorou demais ou respondeu um erro inesperado (500...)
+            // o 403 tambem cai aqui: quer dizer que a chave interna dos dois servicos nao bate,
+            // um erro de configuracao nosso, e nao do usuario (por isso vira 503 e nao 401)
             // nao da pra saber quem e o usuario, entao ninguem entra (nunca libera "as cegas")
             throw new ServicoExternoIndisponivelException("nao foi possivel conferir o login no ms1", e);
         }

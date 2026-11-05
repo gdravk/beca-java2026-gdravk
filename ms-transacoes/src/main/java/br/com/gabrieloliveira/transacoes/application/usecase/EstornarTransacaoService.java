@@ -3,7 +3,6 @@ package br.com.gabrieloliveira.transacoes.application.usecase;
 import br.com.gabrieloliveira.transacoes.application.port.in.CriarTransacaoUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.in.EstornarTransacaoUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.out.TransacaoRepositoryPort;
-import br.com.gabrieloliveira.transacoes.domain.exception.AcessoNegadoException;
 import br.com.gabrieloliveira.transacoes.domain.exception.RecursoNaoEncontradoException;
 import br.com.gabrieloliveira.transacoes.domain.exception.RegraNegocioException;
 import br.com.gabrieloliveira.transacoes.domain.model.Transacao;
@@ -29,9 +28,11 @@ public class EstornarTransacaoService implements EstornarTransacaoUseCase {
                         "transacao com id " + idTransacaoOriginal + " nao encontrada"));
 
         // seguranca (pedido 6): ninguem estorna a transacao de outro usuario
+        // responde 404, igual a uma transacao que nao existe (mesma regra do GET /transactions/{id}):
+        // assim ninguem descobre quais ids existem e sao de outras pessoas
         // essa conferencia vem antes de todas as outras, pra nao contar nada sobre a transacao de outra pessoa
         if (!original.getUsuarioId().equals(usuarioSolicitanteId)) {
-            throw new AcessoNegadoException("voce so pode estornar as suas proprias transacoes");
+            throw new RecursoNaoEncontradoException("transacao com id " + idTransacaoOriginal + " nao encontrada");
         }
 
         // transacao rejeitada nunca movimentou dinheiro, entao nao tem o que corrigir

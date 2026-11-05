@@ -64,11 +64,10 @@ public class TransacaoController {
     }
 
     // GET /transactions/{id} -> 200 com valor em reais, dolar e euro (ou 404)
-    // transacao de outro usuario responde 403
+    // transacao de outro usuario tambem responde 404 (o caso de uso confere o dono antes de buscar o cambio)
     @GetMapping("/{id}")
     public ResponseEntity<TransacaoResponseDTO> buscarPorId(@PathVariable Long id) {
-        Transacao transacao = buscarTransacaoUseCase.buscarPorId(id);
-        usuarioLogado.garantirQueEDoLogado(transacao.getUsuarioId());
+        Transacao transacao = buscarTransacaoUseCase.buscarPorId(id, usuarioLogado.id());
         return ResponseEntity.ok(transacaoWebMapper.paraResponse(transacao));
     }
 

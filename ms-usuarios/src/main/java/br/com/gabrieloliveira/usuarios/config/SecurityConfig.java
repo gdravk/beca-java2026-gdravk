@@ -2,9 +2,12 @@ package br.com.gabrieloliveira.usuarios.config;
 
 import br.com.gabrieloliveira.usuarios.adapter.in.web.seguranca.CredenciaisAuthenticationProvider;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.seguranca.ErroDeSegurancaHandler;
+import br.com.gabrieloliveira.usuarios.application.port.in.VerificarCredenciaisUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,12 +16,13 @@ import org.springframework.security.web.SecurityFilterChain;
 
 // seguranca do ms1 (pedido 6 do PO): autenticacao basica com o email e a senha dos usuarios cadastrados
 //
-// rotas abertas (sem login):
+// rotas abertas (sem login de usuario):
 // - POST /users          -> cadastro (quem ainda nao tem conta precisa conseguir se cadastrar)
-// - POST /users/import   -> cadastro em massa por csv
-// - POST /auth/verificar -> e a rota que o ms2 usa pra conferir o login, entao nao pode exigir login
+// - POST /auth/verificar -> rota que o ms2 usa pra conferir o login; nao exige login de usuario,
+//                           mas exige a chave interna no cabecalho (ver AuthController)
 // - swagger              -> a documentacao fica aberta, como o PO pediu
-// todo o resto (listar, buscar, atualizar e excluir usuario) exige login
+// todo o resto exige login, inclusive a importacao por csv (POST /users/import):
+// aberta, ela deixaria qualquer pessoa criar mil contas numa requisicao so (ajuste da revisao do professor)
 @Configuration
 public class SecurityConfig {
 
@@ -28,9 +32,18 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    // o "gerente de autenticacao": e ele que o filtro da autenticacao basica chama pra conferir o login
+    // o provider e criado aqui com new (e nao como @Component) pra existir uma vez so:
+    // assim cada login errado confere o bcrypt uma vez, e nao duas
+    // ter esse bean tambem desliga o usuario padrao "user" com senha gerada que o spring boot criaria sozinho
+    @Bean
+    public AuthenticationManager authenticationManager(VerificarCredenciaisUseCase verificarCredenciaisUseCase) {
+        return new ProviderManager(new CredenciaisAuthenticationProvider(verificarCredenciaisUseCase));
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   CredenciaisAuthenticationProvider credenciaisAuthenticationProvider,
+                                                   AuthenticationManager authenticationManager,
                                                    ErroDeSegurancaHandler erroDeSegurancaHandler) throws Exception {
         http
                 // csrf protege formularios de sites com sessao; numa api rest ele so atrapalharia (daria 403 nos POST)
@@ -39,7 +52,7 @@ public class SecurityConfig {
                 // (e o jeito normal de uma api rest funcionar, e o que a autenticacao basica espera)
                 .sessionManagement(sessao -> sessao.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(rotas -> rotas
-                        .requestMatchers(HttpMethod.POST, "/users", "/users/import", "/auth/verificar").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/users", "/auth/verificar").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         // /error e a rota interna que o spring usa pra montar respostas de erro;
                         // se ela exigisse login, alguns erros virariam 401 sem motivo
@@ -51,8 +64,8 @@ public class SecurityConfig {
                 .exceptionHandling(erros -> erros
                         .authenticationEntryPoint(erroDeSegurancaHandler)
                         .accessDeniedHandler(erroDeSegurancaHandler))
-                // quem confere o email e a senha e o nosso provider, que chama o caso de uso
-                .authenticationProvider(credenciaisAuthenticationProvider);
+                // quem confere o email e a senha e o gerente acima, com o nosso provider
+                .authenticationManager(authenticationManager);
 
         return http.build();
     }

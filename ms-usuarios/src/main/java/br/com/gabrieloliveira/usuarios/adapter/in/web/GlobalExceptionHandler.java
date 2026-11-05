@@ -2,6 +2,7 @@ package br.com.gabrieloliveira.usuarios.adapter.in.web;
 
 import br.com.gabrieloliveira.usuarios.adapter.in.web.csv.ArquivoCsvInvalidoException;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.ErroResponseDTO;
+import br.com.gabrieloliveira.usuarios.adapter.in.web.seguranca.ChaveInternaInvalidaException;
 import br.com.gabrieloliveira.usuarios.domain.exception.AcessoNegadoException;
 import br.com.gabrieloliveira.usuarios.domain.exception.CredenciaisInvalidasException;
 import br.com.gabrieloliveira.usuarios.domain.exception.RecursoNaoEncontradoException;
@@ -65,6 +66,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .header(HttpHeaders.WWW_AUTHENTICATE, "Basic realm=\"ms-usuarios\"")
                 .body(corpo);
+    }
+
+    // 403: chamaram o POST /auth/verificar sem a chave interna (so o ms2 pode usar essa rota)
+    @ExceptionHandler(ChaveInternaInvalidaException.class)
+    public ResponseEntity<ErroResponseDTO> tratarChaveInternaInvalida(ChaveInternaInvalidaException ex,
+                                                                     HttpServletRequest request) {
+        return montarResposta(HttpStatus.FORBIDDEN, ex.getMessage(), request, null);
     }
 
     // 403: o usuario esta logado, mas tentou mexer nos dados de outro usuario

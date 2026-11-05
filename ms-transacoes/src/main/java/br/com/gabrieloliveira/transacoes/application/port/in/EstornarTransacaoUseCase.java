@@ -7,6 +7,7 @@ import br.com.gabrieloliveira.transacoes.domain.model.Transacao;
 public interface EstornarTransacaoUseCase {
 
     // devolve a transacao de estorno criada
-    // usuarioSolicitanteId = quem esta pedindo o estorno; so o dono da transacao pode estornar (senao 403)
+    // usuarioSolicitanteId = quem esta pedindo o estorno; so o dono da transacao pode estornar
+    // (transacao de outro usuario responde 404, como se nao existisse)
     Transacao estornar(Long idTransacaoOriginal, Long usuarioSolicitanteId);
 }

@@ -3,6 +3,7 @@ package br.com.gabrieloliveira.usuarios.adapter.in.web;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.PaginaResponseDTO;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.UsuarioRequestDTO;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.UsuarioResponseDTO;
+import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.UsuarioResumoResponseDTO;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.UsuarioUpdateRequestDTO;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.seguranca.UsuarioAutenticado;
 import br.com.gabrieloliveira.usuarios.application.port.in.AtualizarUsuarioUseCase;
@@ -68,18 +69,22 @@ public class UsuarioController {
     // GET /users -> lista paginada, responde 200
     // da pra escolher a pagina pela url, ex: /users?pagina=0&tamanho=5
     // se nao mandar nada, vem a primeira pagina (0) com 10 usuarios, ordenados por id
+    // cada usuario vem sem o cpf (dado pessoal), so com id, nome, email e data de criacao
     @GetMapping
-    public ResponseEntity<PaginaResponseDTO<UsuarioResponseDTO>> listar(
+    public ResponseEntity<PaginaResponseDTO<UsuarioResumoResponseDTO>> listar(
             @RequestParam(defaultValue = "0") int pagina,
             @RequestParam(defaultValue = "10") int tamanho) {
         Pagina<Usuario> resultado = listarUsuariosUseCase.listar(pagina, tamanho);
         return ResponseEntity.ok(usuarioWebMapper.paraPaginaResponse(resultado));
     }
 
-    // GET /users/{id} -> busca um usuario, responde 200 (ou 404 se nao existir)
+    // GET /users/{id} -> busca um usuario com todos os dados (inclusive cpf), responde 200 (ou 404 se nao existir)
+    // so o proprio usuario pode ver os dados completos dele; o id de outra pessoa responde 403
     // @PathVariable pega o {id} que veio na url
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioResponseDTO> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<UsuarioResponseDTO> buscarPorId(@PathVariable Long id,
+                                                          @AuthenticationPrincipal UsuarioAutenticado logado) {
+        garantirQueEOProprioUsuario(id, logado, "voce so pode ver os dados da sua propria conta");
         Usuario usuario = buscarUsuarioUseCase.buscarPorId(id);
         return ResponseEntity.ok(usuarioWebMapper.paraResponse(usuario));
     }
@@ -92,7 +97,7 @@ public class UsuarioController {
     public ResponseEntity<UsuarioResponseDTO> atualizar(@PathVariable Long id,
                                                         @Valid @RequestBody UsuarioUpdateRequestDTO dto,
                                                         @AuthenticationPrincipal UsuarioAutenticado logado) {
-        garantirQueEOProprioUsuario(id, logado, "atualizar");
+        garantirQueEOProprioUsuario(id, logado, "voce so pode atualizar a sua propria conta");
         Usuario dadosNovos = usuarioWebMapper.paraDominio(dto);
         Usuario atualizado = atualizarUsuarioUseCase.atualizar(id, dadosNovos);
         return ResponseEntity.ok(usuarioWebMapper.paraResponse(atualizado));
@@ -102,16 +107,16 @@ public class UsuarioController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> excluir(@PathVariable Long id,
                                         @AuthenticationPrincipal UsuarioAutenticado logado) {
-        garantirQueEOProprioUsuario(id, logado, "excluir");
+        garantirQueEOProprioUsuario(id, logado, "voce so pode excluir a sua propria conta");
         excluirUsuarioUseCase.excluir(id);
         return ResponseEntity.noContent().build();
     }
 
-    // seguranca (pedido 6): cada usuario so pode alterar ou excluir a propria conta
-    // listar e buscar continuam liberados pra qualquer usuario logado (a resposta nunca traz a senha)
-    private void garantirQueEOProprioUsuario(Long idDaRota, UsuarioAutenticado logado, String acao) {
+    // seguranca (pedido 6): cada usuario so pode ver os dados completos, alterar ou excluir a propria conta
+    // a listagem continua liberada pra qualquer usuario logado, mas sem cpf (e nunca com senha)
+    private void garantirQueEOProprioUsuario(Long idDaRota, UsuarioAutenticado logado, String mensagem) {
         if (!idDaRota.equals(logado.getId())) {
-            throw new AcessoNegadoException("voce so pode " + acao + " a sua propria conta");
+            throw new AcessoNegadoException(mensagem);
         }
     }
 }

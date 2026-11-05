@@ -2,7 +2,6 @@ package br.com.gabrieloliveira.transacoes.application.usecase;
 
 import br.com.gabrieloliveira.transacoes.application.port.in.CriarTransacaoUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.out.TransacaoRepositoryPort;
-import br.com.gabrieloliveira.transacoes.domain.exception.AcessoNegadoException;
 import br.com.gabrieloliveira.transacoes.domain.exception.RecursoNaoEncontradoException;
 import br.com.gabrieloliveira.transacoes.domain.exception.RegraNegocioException;
 import br.com.gabrieloliveira.transacoes.domain.model.Categoria;
@@ -60,12 +59,12 @@ class EstornarTransacaoServiceTest {
     }
 
     @Test
-    void outroUsuarioNaoPodeEstornarERecebeAcessoNegado() {
+    void outroUsuarioNaoPodeEstornarERecebe404ComoSeNaoExistisse() {
         when(transacaoRepositoryPort.buscarPorId(10L)).thenReturn(Optional.of(compraAprovada()));
 
-        AcessoNegadoException erro = assertThrows(AcessoNegadoException.class,
+        RecursoNaoEncontradoException erro = assertThrows(RecursoNaoEncontradoException.class,
                 () -> service.estornar(10L, OUTRO_USUARIO));
-        assertEquals("voce so pode estornar as suas proprias transacoes", erro.getMessage());
+        assertEquals("transacao com id 10 nao encontrada", erro.getMessage());
 
         // nada foi criado
         verify(criarTransacaoUseCase, never()).criar(any());

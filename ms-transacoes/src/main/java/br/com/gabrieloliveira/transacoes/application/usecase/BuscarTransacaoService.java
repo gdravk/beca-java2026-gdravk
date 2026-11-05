@@ -17,13 +17,26 @@ public class BuscarTransacaoService implements BuscarTransacaoUseCase {
     }
 
     @Override
-    public Transacao buscarPorId(Long id) {
+    public Transacao buscarPorId(Long id, Long usuarioSolicitanteId) {
         Transacao transacao = transacaoRepositoryPort.buscarPorId(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("transacao com id " + id + " nao encontrada"));
+                .orElseThrow(() -> naoEncontrada(id));
+
+        // seguranca (pedido 6, ajuste da revisao do professor):
+        // a transacao de outro usuario responde 404, igual a uma que nao existe
+        // (um 403 contaria pra quem esta tentando que aquele id existe e e de outra pessoa)
+        // essa conferencia vem ANTES do cambio, pra nao chamar a brasilapi por uma transacao que nem vai ser mostrada
+        if (!transacao.getUsuarioId().equals(usuarioSolicitanteId)) {
+            throw naoEncontrada(id);
+        }
 
         // se a transacao foi gravada sem taxa (brasilapi fora do ar na criacao), tenta buscar agora
         // quando ela ja tem as taxas guardadas, nada e consultado e a resposta usa as taxas da criacao
         preenchedorDeCotacoes.preencherFaltantes(transacao);
         return transacao;
+    }
+
+    // a mesma mensagem pros dois casos (nao existe / e de outro usuario)
+    private RecursoNaoEncontradoException naoEncontrada(Long id) {
+        return new RecursoNaoEncontradoException("transacao com id " + id + " nao encontrada");
     }
 }
