@@ -144,11 +144,13 @@ public class LeitorCsvUsuarios {
 
         // monta o mesmo dto do POST /users, pra usar exatamente as mesmas validacoes do cadastro
         // o trim tira espacos sobrando nas pontas, que sao comuns quando o arquivo e editado na mao
+        // a senha e a excecao: ela vai exatamente como esta no arquivo, igual no POST /users
+        // (se tirassemos o espaco de "Senha@123 ", a pessoa digitaria a senha com espaco no login e nao entraria)
         UsuarioRequestDTO dto = new UsuarioRequestDTO();
         dto.setNome(colunas[0].trim());
         dto.setEmail(colunas[1].trim());
         dto.setCpf(colunas[2].trim());
-        dto.setSenha(colunas[3].trim());
+        dto.setSenha(colunas[3]);
 
         Set<ConstraintViolation<UsuarioRequestDTO>> violacoes = validator.validate(dto);
         if (!violacoes.isEmpty()) {

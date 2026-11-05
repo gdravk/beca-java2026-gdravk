@@ -88,6 +88,17 @@ class LeitorCsvUsuariosTest {
     }
 
     @Test
+    void senhaFicaExatamenteComoNoArquivoComEspacos() {
+        // igual ao POST /users: a senha nao passa por trim, entao o espaco faz parte dela
+        String csv = CABECALHO + "Ana Souza;ana@email.com;12345678901; Senha@123 \n";
+
+        LinhaImportacao linha = leitor.ler(bytes(csv)).get(0);
+
+        assertTrue(linha.isValida());
+        assertEquals(" Senha@123 ", linha.getUsuario().getSenha());
+    }
+
+    @Test
     void linhaComEmailInvalidoViraLinhaInvalidaComOMotivo() {
         String csv = CABECALHO + "Ana Souza;ana-email.com;12345678901;Senha@123\n";
 
