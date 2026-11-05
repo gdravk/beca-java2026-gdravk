@@ -18,11 +18,23 @@ import br.com.gabrieloliveira.transacoes.domain.service.ValidadorDeTransacao;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Clock;
+import java.time.ZoneId;
+
 // monta o nucleo da aplicacao: o dominio e os casos de uso sao java puro, sem @Service,
 // entao sao criados aqui e recebem as implementacoes das portas de saida (adaptadores @Component)
 // trocar um adaptador (ex: saldo falso -> api mock real) nao muda nada nesta classe
 @Configuration
 public class BeanConfig {
+
+    // o relogio da aplicacao, sempre no fuso de brasilia
+    // sem fixar o fuso, num container em utc o "hoje" e o "agora" seriam os de londres
+    // (uma compra as 22h no brasil ja cairia no dia seguinte)
+    // fica num bean pra que os testes possam usar um relogio parado no lugar dele
+    @Bean
+    public Clock relogio() {
+        return Clock.system(ZoneId.of("America/Sao_Paulo"));
+    }
 
     @Bean
     public ValidadorDeTransacao validadorDeTransacao() {
