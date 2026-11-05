@@ -6,4 +6,9 @@ package br.com.gabrieloliveira.usuarios.application.port.out;
 public interface SenhaEncoderPort {
 
     String codificar(String senhaPura);
+
+    // confere se a senha digitada corresponde ao hash guardado no banco (usado na seguranca, pedido 6)
+    // o hash nao tem volta, entao a conferencia e feita gerando o hash da senha digitada do mesmo jeito
+    // e comparando os dois
+    boolean confere(String senhaPura, String hashGuardado);
 }

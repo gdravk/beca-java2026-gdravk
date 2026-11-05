@@ -42,6 +42,12 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
     }
 
     @Override
+    public Optional<Usuario> buscarPorEmail(String email) {
+        return usuarioJpaRepository.findByEmail(email)
+                .map(entity -> usuarioPersistenceMapper.paraDominio(entity));
+    }
+
+    @Override
     public Pagina<Usuario> listar(int numeroPagina, int tamanhoPagina) {
         // PageRequest diz pro banco qual pagina queremos, de que tamanho, e ordenado por id
         PageRequest pedidoDePagina = PageRequest.of(numeroPagina, tamanhoPagina, Sort.by("id"));

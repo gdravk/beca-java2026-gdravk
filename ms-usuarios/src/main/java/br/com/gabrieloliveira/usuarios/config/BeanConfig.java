@@ -6,6 +6,7 @@ import br.com.gabrieloliveira.usuarios.application.port.in.CriarUsuarioUseCase;
 import br.com.gabrieloliveira.usuarios.application.port.in.ExcluirUsuarioUseCase;
 import br.com.gabrieloliveira.usuarios.application.port.in.ImportarUsuariosUseCase;
 import br.com.gabrieloliveira.usuarios.application.port.in.ListarUsuariosUseCase;
+import br.com.gabrieloliveira.usuarios.application.port.in.VerificarCredenciaisUseCase;
 import br.com.gabrieloliveira.usuarios.application.port.out.SenhaEncoderPort;
 import br.com.gabrieloliveira.usuarios.application.port.out.UsuarioRepositoryPort;
 import br.com.gabrieloliveira.usuarios.application.usecase.AtualizarUsuarioService;
@@ -14,6 +15,7 @@ import br.com.gabrieloliveira.usuarios.application.usecase.CriarUsuarioService;
 import br.com.gabrieloliveira.usuarios.application.usecase.ExcluirUsuarioService;
 import br.com.gabrieloliveira.usuarios.application.usecase.ImportarUsuariosService;
 import br.com.gabrieloliveira.usuarios.application.usecase.ListarUsuariosService;
+import br.com.gabrieloliveira.usuarios.application.usecase.VerificarCredenciaisService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -57,5 +59,11 @@ public class BeanConfig {
     @Bean
     public ImportarUsuariosUseCase importarUsuariosUseCase(CriarUsuarioUseCase criarUsuarioUseCase) {
         return new ImportarUsuariosService(criarUsuarioUseCase);
+    }
+
+    @Bean
+    public VerificarCredenciaisUseCase verificarCredenciaisUseCase(UsuarioRepositoryPort usuarioRepositoryPort,
+                                                                   SenhaEncoderPort senhaEncoderPort) {
+        return new VerificarCredenciaisService(usuarioRepositoryPort, senhaEncoderPort);
     }
 }

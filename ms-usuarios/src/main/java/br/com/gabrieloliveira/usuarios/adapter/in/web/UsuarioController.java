@@ -4,16 +4,19 @@ import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.PaginaResponseDTO;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.UsuarioRequestDTO;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.UsuarioResponseDTO;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.UsuarioUpdateRequestDTO;
+import br.com.gabrieloliveira.usuarios.adapter.in.web.seguranca.UsuarioAutenticado;
 import br.com.gabrieloliveira.usuarios.application.port.in.AtualizarUsuarioUseCase;
 import br.com.gabrieloliveira.usuarios.application.port.in.BuscarUsuarioUseCase;
 import br.com.gabrieloliveira.usuarios.application.port.in.CriarUsuarioUseCase;
 import br.com.gabrieloliveira.usuarios.application.port.in.ExcluirUsuarioUseCase;
 import br.com.gabrieloliveira.usuarios.application.port.in.ListarUsuariosUseCase;
+import br.com.gabrieloliveira.usuarios.domain.exception.AcessoNegadoException;
 import br.com.gabrieloliveira.usuarios.domain.model.Pagina;
 import br.com.gabrieloliveira.usuarios.domain.model.Usuario;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -84,9 +87,12 @@ public class UsuarioController {
     // PUT /users/{id} -> atualiza um usuario, responde 200
     // usa o UsuarioUpdateRequestDTO (e nao o UsuarioRequestDTO do cadastro) porque aqui a senha e opcional:
     // se o json nao trouxer "senha", a senha atual e mantida
+    // @AuthenticationPrincipal entrega quem esta logado (o UsuarioAutenticado criado no login)
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> atualizar(@PathVariable Long id,
-                                                        @Valid @RequestBody UsuarioUpdateRequestDTO dto) {
+                                                        @Valid @RequestBody UsuarioUpdateRequestDTO dto,
+                                                        @AuthenticationPrincipal UsuarioAutenticado logado) {
+        garantirQueEOProprioUsuario(id, logado, "atualizar");
         Usuario dadosNovos = usuarioWebMapper.paraDominio(dto);
         Usuario atualizado = atualizarUsuarioUseCase.atualizar(id, dadosNovos);
         return ResponseEntity.ok(usuarioWebMapper.paraResponse(atualizado));
@@ -94,8 +100,18 @@ public class UsuarioController {
 
     // DELETE /users/{id} -> exclui um usuario, responde 204 no content (sucesso, mas sem corpo)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluir(@PathVariable Long id) {
+    public ResponseEntity<Void> excluir(@PathVariable Long id,
+                                        @AuthenticationPrincipal UsuarioAutenticado logado) {
+        garantirQueEOProprioUsuario(id, logado, "excluir");
         excluirUsuarioUseCase.excluir(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // seguranca (pedido 6): cada usuario so pode alterar ou excluir a propria conta
+    // listar e buscar continuam liberados pra qualquer usuario logado (a resposta nunca traz a senha)
+    private void garantirQueEOProprioUsuario(Long idDaRota, UsuarioAutenticado logado, String acao) {
+        if (!idDaRota.equals(logado.getId())) {
+            throw new AcessoNegadoException("voce so pode " + acao + " a sua propria conta");
+        }
     }
 }

@@ -1,15 +1,18 @@
 package br.com.gabrieloliveira.transacoes.config;
 
 import br.com.gabrieloliveira.transacoes.application.port.in.AnalisarDespesasUseCase;
+import br.com.gabrieloliveira.transacoes.application.port.in.AutenticarUsuarioUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.in.BuscarTransacaoUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.in.ConsultarSaldoUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.in.CriarTransacaoUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.in.EstornarTransacaoUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.in.ListarTransacoesUseCase;
+import br.com.gabrieloliveira.transacoes.application.port.out.AutenticacaoPort;
 import br.com.gabrieloliveira.transacoes.application.port.out.CambioPort;
 import br.com.gabrieloliveira.transacoes.application.port.out.SaldoContaPort;
 import br.com.gabrieloliveira.transacoes.application.port.out.TransacaoRepositoryPort;
 import br.com.gabrieloliveira.transacoes.application.usecase.AnalisarDespesasService;
+import br.com.gabrieloliveira.transacoes.application.usecase.AutenticarUsuarioService;
 import br.com.gabrieloliveira.transacoes.application.usecase.BuscarTransacaoService;
 import br.com.gabrieloliveira.transacoes.application.usecase.ConsultarSaldoService;
 import br.com.gabrieloliveira.transacoes.application.usecase.CriarTransacaoService;
@@ -84,6 +87,13 @@ public class BeanConfig {
                                                            AnalisadorDeDespesas analisadorDeDespesas,
                                                            Clock relogio) {
         return new AnalisarDespesasService(transacaoRepositoryPort, analisadorDeDespesas, relogio);
+    }
+
+    // usado pelo Ms1AuthenticationProvider a cada requisicao com login
+    // recebe a AutenticacaoPort, que hoje e implementada pelo Ms1AutenticacaoAdapter (chama o ms1)
+    @Bean
+    public AutenticarUsuarioUseCase autenticarUsuarioUseCase(AutenticacaoPort autenticacaoPort) {
+        return new AutenticarUsuarioService(autenticacaoPort);
     }
 
     @Bean
