@@ -55,9 +55,10 @@ public class BeanConfig {
     public CriarTransacaoUseCase criarTransacaoUseCase(TransacaoRepositoryPort transacaoRepositoryPort,
                                                        SaldoContaPort saldoContaPort,
                                                        PreenchedorDeCotacoes preenchedorDeCotacoes,
-                                                       ValidadorDeTransacao validadorDeTransacao) {
+                                                       ValidadorDeTransacao validadorDeTransacao,
+                                                       Clock relogio) {
         return new CriarTransacaoService(transacaoRepositoryPort, saldoContaPort, preenchedorDeCotacoes,
-                validadorDeTransacao);
+                validadorDeTransacao, relogio);
     }
 
     @Bean
