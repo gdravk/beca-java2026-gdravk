@@ -1,12 +1,10 @@
 package br.com.gabrieloliveira.transacoes.application.usecase;
 
 import br.com.gabrieloliveira.transacoes.application.port.in.CriarTransacaoUseCase;
-import br.com.gabrieloliveira.transacoes.application.port.out.CambioPort;
 import br.com.gabrieloliveira.transacoes.application.port.out.SaldoContaPort;
 import br.com.gabrieloliveira.transacoes.application.port.out.TransacaoRepositoryPort;
 import br.com.gabrieloliveira.transacoes.domain.exception.ServicoExternoIndisponivelException;
 import br.com.gabrieloliveira.transacoes.domain.model.Categoria;
-import br.com.gabrieloliveira.transacoes.domain.model.Cotacao;
 import br.com.gabrieloliveira.transacoes.domain.model.SaldoConta;
 import br.com.gabrieloliveira.transacoes.domain.model.Transacao;
 import br.com.gabrieloliveira.transacoes.domain.service.ValidadorDeTransacao;
@@ -19,7 +17,7 @@ import java.util.Optional;
 // 1. valida os dados da transacao (valor, categoria da compra, destino da transferencia)
 // 2. se for saida, consulta saldo e limites (SaldoContaPort) e aplica as regras do dominio
 // 3. define APPROVED ou REJECTED (com motivo)
-// 4. guarda as cotacoes de dolar e euro do momento (CambioPort)
+// 4. guarda as cotacoes de dolar e euro do momento (PreenchedorDeCotacoes, que usa a CambioPort)
 // 5. salva (TransacaoRepositoryPort) e devolve
 // a transacao e sempre gravada, aprovada ou rejeitada
 public class CriarTransacaoService implements CriarTransacaoUseCase {
@@ -31,16 +29,16 @@ public class CriarTransacaoService implements CriarTransacaoUseCase {
 
     private final TransacaoRepositoryPort transacaoRepositoryPort;
     private final SaldoContaPort saldoContaPort;
-    private final CambioPort cambioPort;
+    private final PreenchedorDeCotacoes preenchedorDeCotacoes;
     private final ValidadorDeTransacao validadorDeTransacao;
 
     public CriarTransacaoService(TransacaoRepositoryPort transacaoRepositoryPort,
                                  SaldoContaPort saldoContaPort,
-                                 CambioPort cambioPort,
+                                 PreenchedorDeCotacoes preenchedorDeCotacoes,
                                  ValidadorDeTransacao validadorDeTransacao) {
         this.transacaoRepositoryPort = transacaoRepositoryPort;
         this.saldoContaPort = saldoContaPort;
-        this.cambioPort = cambioPort;
+        this.preenchedorDeCotacoes = preenchedorDeCotacoes;
         this.validadorDeTransacao = validadorDeTransacao;
     }
 
@@ -65,7 +63,10 @@ public class CriarTransacaoService implements CriarTransacaoUseCase {
             }
         }
 
-        registrarCotacoes(novaTransacao);
+        // guarda as taxas de dolar e euro do momento da criacao
+        // se a brasilapi estiver fora do ar, a transacao e gravada sem taxa (o cambio e so informativo
+        // e nao pode impedir a transacao); a consulta tenta de novo depois (ver PreenchedorDeCotacoes)
+        preenchedorDeCotacoes.preencherFaltantes(novaTransacao);
         return transacaoRepositoryPort.salvar(novaTransacao);
     }
 
@@ -95,25 +96,4 @@ public class CriarTransacaoService implements CriarTransacaoUseCase {
         }
     }
 
-    // o cambio e so informativo: se o servico falhar, a transacao segue sem a taxa
-    // e a consulta sinaliza que a conversao nao esta disponivel
-    private void registrarCotacoes(Transacao transacao) {
-        try {
-            Cotacao dolar = cambioPort.buscarCotacaoAtual("USD");
-            transacao.setTaxaDolar(dolar.getTaxa());
-            transacao.setDataTaxaDolar(dolar.getData());
-        } catch (ServicoExternoIndisponivelException e) {
-            transacao.setTaxaDolar(null);
-            transacao.setDataTaxaDolar(null);
-        }
-
-        try {
-            Cotacao euro = cambioPort.buscarCotacaoAtual("EUR");
-            transacao.setTaxaEuro(euro.getTaxa());
-            transacao.setDataTaxaEuro(euro.getData());
-        } catch (ServicoExternoIndisponivelException e) {
-            transacao.setTaxaEuro(null);
-            transacao.setDataTaxaEuro(null);
-        }
-    }
 }

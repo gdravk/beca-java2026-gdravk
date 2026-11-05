@@ -13,6 +13,7 @@ import br.com.gabrieloliveira.transacoes.application.usecase.ConsultarSaldoServi
 import br.com.gabrieloliveira.transacoes.application.usecase.CriarTransacaoService;
 import br.com.gabrieloliveira.transacoes.application.usecase.EstornarTransacaoService;
 import br.com.gabrieloliveira.transacoes.application.usecase.ListarTransacoesService;
+import br.com.gabrieloliveira.transacoes.application.usecase.PreenchedorDeCotacoes;
 import br.com.gabrieloliveira.transacoes.domain.service.ValidadorDeTransacao;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,22 +29,32 @@ public class BeanConfig {
         return new ValidadorDeTransacao();
     }
 
+    // um preenchedor so, compartilhado pelos tres casos de uso que mostram cambio (criar, buscar e listar)
+    // ele recebe a CambioPort, que hoje e implementada pelo BrasilApiCambioAdapter
+    @Bean
+    public PreenchedorDeCotacoes preenchedorDeCotacoes(CambioPort cambioPort) {
+        return new PreenchedorDeCotacoes(cambioPort);
+    }
+
     @Bean
     public CriarTransacaoUseCase criarTransacaoUseCase(TransacaoRepositoryPort transacaoRepositoryPort,
                                                        SaldoContaPort saldoContaPort,
-                                                       CambioPort cambioPort,
+                                                       PreenchedorDeCotacoes preenchedorDeCotacoes,
                                                        ValidadorDeTransacao validadorDeTransacao) {
-        return new CriarTransacaoService(transacaoRepositoryPort, saldoContaPort, cambioPort, validadorDeTransacao);
+        return new CriarTransacaoService(transacaoRepositoryPort, saldoContaPort, preenchedorDeCotacoes,
+                validadorDeTransacao);
     }
 
     @Bean
-    public BuscarTransacaoUseCase buscarTransacaoUseCase(TransacaoRepositoryPort transacaoRepositoryPort) {
-        return new BuscarTransacaoService(transacaoRepositoryPort);
+    public BuscarTransacaoUseCase buscarTransacaoUseCase(TransacaoRepositoryPort transacaoRepositoryPort,
+                                                         PreenchedorDeCotacoes preenchedorDeCotacoes) {
+        return new BuscarTransacaoService(transacaoRepositoryPort, preenchedorDeCotacoes);
     }
 
     @Bean
-    public ListarTransacoesUseCase listarTransacoesUseCase(TransacaoRepositoryPort transacaoRepositoryPort) {
-        return new ListarTransacoesService(transacaoRepositoryPort);
+    public ListarTransacoesUseCase listarTransacoesUseCase(TransacaoRepositoryPort transacaoRepositoryPort,
+                                                           PreenchedorDeCotacoes preenchedorDeCotacoes) {
+        return new ListarTransacoesService(transacaoRepositoryPort, preenchedorDeCotacoes);
     }
 
     @Bean
