@@ -83,6 +83,12 @@
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>3.2.0</version>
 		</dependency>
+		<!-- banco em memoria usado so nos testes de repositorio (scope test: nao vai pra aplicacao) -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
