@@ -4,6 +4,7 @@ import br.com.gabrieloliveira.transacoes.adapter.in.web.dto.SaldoContaResponseDT
 import br.com.gabrieloliveira.transacoes.adapter.in.web.seguranca.UsuarioLogado;
 import br.com.gabrieloliveira.transacoes.application.port.in.ConsultarSaldoUseCase;
 import br.com.gabrieloliveira.transacoes.domain.model.SaldoConta;
+import jakarta.validation.constraints.Positive;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +18,11 @@ import java.time.LocalDateTime;
 // fica separado do TransacaoController porque e outro recurso da api: /accounts, e nao /transactions
 @RestController
 @RequestMapping("/accounts")
+// os ids da url e do filtro sao validados direto no parametro (fase 13): zero ou negativo responde 400
+// o spring mvc faz essa validacao sozinho (sem @Validated), igual no ms1
 public class ContaController {
+
+    private static final String ID_POSITIVO = "o id deve ser um numero positivo";
 
     private final ConsultarSaldoUseCase consultarSaldoUseCase;
     private final UsuarioLogado usuarioLogado;
@@ -34,7 +39,7 @@ public class ContaController {
     // 404 se o usuario nao tiver conta, 503 se a api mock estiver fora do ar
     // 403 se o usuarioId da url nao for o do usuario logado (ninguem ve o saldo de outra pessoa)
     @GetMapping("/{usuarioId}/balance")
-    public ResponseEntity<SaldoContaResponseDTO> consultarSaldo(@PathVariable Long usuarioId) {
+    public ResponseEntity<SaldoContaResponseDTO> consultarSaldo(@PathVariable @Positive(message = ID_POSITIVO) Long usuarioId) {
         usuarioLogado.garantirQueEDoLogado(usuarioId);
         SaldoConta conta = consultarSaldoUseCase.consultar(usuarioId);
         SaldoContaResponseDTO resposta = new SaldoContaResponseDTO(

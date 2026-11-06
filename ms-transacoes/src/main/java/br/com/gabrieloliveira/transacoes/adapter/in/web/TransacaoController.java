@@ -10,6 +10,7 @@ import br.com.gabrieloliveira.transacoes.application.port.in.ListarTransacoesUse
 import br.com.gabrieloliveira.transacoes.domain.model.TipoTransacao;
 import br.com.gabrieloliveira.transacoes.domain.model.Transacao;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,11 @@ import java.util.List;
 // todas as rotas exigem login (SecurityConfig) e so mostram ou criam transacoes do usuario logado
 @RestController
 @RequestMapping("/transactions")
+// os ids da url e do filtro sao validados direto no parametro (fase 13): zero ou negativo responde 400
+// o spring mvc faz essa validacao sozinho (sem @Validated), igual no ms1
 public class TransacaoController {
+
+    private static final String ID_POSITIVO = "o id deve ser um numero positivo";
 
     private final CriarTransacaoUseCase criarTransacaoUseCase;
     private final BuscarTransacaoUseCase buscarTransacaoUseCase;
@@ -66,7 +71,7 @@ public class TransacaoController {
     // GET /transactions/{id} -> 200 com valor em reais, dolar e euro (ou 404)
     // transacao de outro usuario tambem responde 404 (o caso de uso confere o dono antes de buscar o cambio)
     @GetMapping("/{id}")
-    public ResponseEntity<TransacaoResponseDTO> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<TransacaoResponseDTO> buscarPorId(@PathVariable @Positive(message = ID_POSITIVO) Long id) {
         Transacao transacao = buscarTransacaoUseCase.buscarPorId(id, usuarioLogado.id());
         return ResponseEntity.ok(transacaoWebMapper.paraResponse(transacao));
     }
@@ -76,7 +81,7 @@ public class TransacaoController {
     // lista as transacoes de quem esta logado; o usuarioId so e aceito se for o do proprio usuario (senao 403)
     @GetMapping
     public ResponseEntity<List<TransacaoResponseDTO>> listar(
-            @RequestParam(required = false) Long usuarioId,
+            @RequestParam(required = false) @Positive(message = ID_POSITIVO) Long usuarioId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim,
             @RequestParam(required = false) TipoTransacao tipo) {
@@ -88,7 +93,7 @@ public class TransacaoController {
     // POST /transactions/{id}/estorno -> 201 com a nova transacao de estorno
     // so o dono da transacao pode estornar (a conferencia e feita no caso de uso, antes de criar o estorno)
     @PostMapping("/{id}/estorno")
-    public ResponseEntity<TransacaoResponseDTO> estornar(@PathVariable Long id) {
+    public ResponseEntity<TransacaoResponseDTO> estornar(@PathVariable @Positive(message = ID_POSITIVO) Long id) {
         Transacao estorno = estornarTransacaoUseCase.estornar(id, usuarioLogado.id());
         return ResponseEntity.status(HttpStatus.CREATED).body(transacaoWebMapper.paraResponse(estorno));
     }

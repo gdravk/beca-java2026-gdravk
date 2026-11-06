@@ -16,8 +16,19 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.method.ParameterErrors;
+import org.springframework.validation.method.ParameterValidationResult;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.exc.MismatchedInputException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -26,6 +37,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 // essa classe fica "escutando" os erros que escapam dos controllers
@@ -34,6 +46,9 @@ import java.util.Map;
 // ela fica no adaptador web porque transformar erro em status http e coisa do mundo http
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    // log para os erros inesperados (o 500): o cliente recebe uma mensagem generica e os detalhes ficam aqui
+    private static final Logger LOG = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     // 404: o usuario (ou outra coisa) nao foi encontrado
     @ExceptionHandler(RecursoNaoEncontradoException.class)
@@ -112,18 +127,52 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErroResponseDTO> tratarValidacao(MethodArgumentNotValidException ex,
                                                           HttpServletRequest request) {
-        // LinkedHashMap mantem a ordem em que os erros foram adicionados
-        Map<String, String> campos = new LinkedHashMap<>();
+        ErrosPorCampo erros = new ErrosPorCampo();
         for (FieldError erroDoCampo : ex.getBindingResult().getFieldErrors()) {
-            campos.put(erroDoCampo.getField(), erroDoCampo.getDefaultMessage());
+            erros.adicionar(erroDoCampo.getField(), erroDoCampo.getDefaultMessage());
         }
-        return montarResposta(HttpStatus.BAD_REQUEST, "existem campos invalidos na requisicao", request, campos);
+        return montarResposta(HttpStatus.BAD_REQUEST, "existem campos invalidos na requisicao", request,
+                erros.paraResposta());
+    }
+
+    // 400: a validacao dos parametros da url falhou (fase 13), ex: GET /users?tamanho=0 ou GET /users/-5
+    // o spring junta os erros por parametro; cada um vira uma linha em "campos", igual aos erros do corpo
+    // quando o metodo tem parametro validado E corpo com @Valid (como o PUT), os erros do corpo tambem chegam aqui,
+    // dentro de um ParameterErrors, e por isso pegamos os campos dele um por um
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ErroResponseDTO> tratarValidacaoDosParametros(HandlerMethodValidationException ex,
+                                                                       HttpServletRequest request) {
+        ErrosPorCampo erros = new ErrosPorCampo();
+        for (ParameterValidationResult resultado : ex.getParameterValidationResults()) {
+            if (resultado instanceof ParameterErrors errosDoCorpo) {
+                for (FieldError erroDoCampo : errosDoCorpo.getFieldErrors()) {
+                    erros.adicionar(erroDoCampo.getField(), erroDoCampo.getDefaultMessage());
+                }
+            } else {
+                String nomeDoParametro = resultado.getMethodParameter().getParameterName();
+                for (MessageSourceResolvable erro : resultado.getResolvableErrors()) {
+                    erros.adicionar(nomeDoParametro, erro.getDefaultMessage());
+                }
+            }
+        }
+        return montarResposta(HttpStatus.BAD_REQUEST, "existem campos invalidos na requisicao", request,
+                erros.paraResposta());
     }
 
     // 400: o json veio quebrado (faltou uma virgula, aspas, chave...)
+    // ou um campo veio com o tipo de dado errado (ex: "nome": {"a": 1}); nesse caso dizemos qual campo foi
+    // (o mesmo tratamento do ms2, pra os dois servicos responderem igual)
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErroResponseDTO> tratarJsonInvalido(HttpMessageNotReadableException ex,
                                                              HttpServletRequest request) {
+        if (ex.getCause() instanceof MismatchedInputException erroDoCampo && !erroDoCampo.getPath().isEmpty()) {
+            // o "path" e o caminho ate o campo; o ultimo pedaco e o nome do campo (ex: "nome")
+            List<JacksonException.Reference> caminho = erroDoCampo.getPath();
+            String campo = caminho.get(caminho.size() - 1).getPropertyName();
+            Map<String, String> campos = new LinkedHashMap<>();
+            campos.put(campo, "o campo veio com um tipo de dado errado, envie um texto");
+            return montarResposta(HttpStatus.BAD_REQUEST, "existem campos invalidos na requisicao", request, campos);
+        }
         return montarResposta(HttpStatus.BAD_REQUEST, "o corpo da requisicao esta mal formatado", request, null);
     }
 
@@ -166,6 +215,40 @@ public class GlobalExceptionHandler {
         String mensagem = "o formato '" + ex.getContentType() + "' nao e aceito nesta rota, aceitos: "
                 + ex.getSupportedMediaTypes();
         return montarResposta(HttpStatus.UNSUPPORTED_MEDIA_TYPE, mensagem, request, null);
+    }
+
+    // 405: a rota existe, mas nao com esse metodo http (ex: PATCH /users/1, que so aceita GET, PUT e DELETE)
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErroResponseDTO> tratarMetodoNaoAceito(HttpRequestMethodNotSupportedException ex,
+                                                                HttpServletRequest request) {
+        String mensagem = "o metodo " + ex.getMethod() + " nao e aceito nesta rota, aceitos: "
+                + ex.getSupportedHttpMethods();
+        return montarResposta(HttpStatus.METHOD_NOT_ALLOWED, mensagem, request, null);
+    }
+
+    // 404: a rota nao existe (ex: GET /usuarios em vez de /users)
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErroResponseDTO> tratarRotaInexistente(NoResourceFoundException ex,
+                                                                HttpServletRequest request) {
+        return montarResposta(HttpStatus.NOT_FOUND, "a rota " + request.getRequestURI() + " nao existe",
+                request, null);
+    }
+
+    // rede de seguranca: qualquer erro que nao caiu em nenhum handler acima
+    // sem isso, o spring responderia no formato padrao dele (diferente do nosso) e, com o devtools ligado,
+    // ainda mandaria o stack trace inteiro pro cliente, mostrando por dentro como o codigo funciona
+    // - se for um erro http conhecido do spring (ErrorResponse), mantemos o status que ele escolheu
+    // - se for um erro inesperado, respondemos 500 com uma mensagem generica e guardamos os detalhes so no log
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErroResponseDTO> tratarErroInesperado(Exception ex, HttpServletRequest request) {
+        if (ex instanceof ErrorResponse erroHttp) {
+            HttpStatus status = HttpStatus.valueOf(erroHttp.getStatusCode().value());
+            return montarResposta(status, "a requisicao nao pode ser atendida: " + status.getReasonPhrase(),
+                    request, null);
+        }
+        LOG.error("erro inesperado em {} {}", request.getMethod(), request.getRequestURI(), ex);
+        return montarResposta(HttpStatus.INTERNAL_SERVER_ERROR,
+                "ocorreu um erro inesperado, tente novamente mais tarde", request, null);
     }
 
     // metodo de apoio pra nao repetir o mesmo codigo em todos os handlers acima
