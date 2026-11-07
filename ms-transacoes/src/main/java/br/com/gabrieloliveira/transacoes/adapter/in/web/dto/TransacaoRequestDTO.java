@@ -14,10 +14,11 @@ import java.math.BigDecimal;
 // aqui fica a validacao de formato (bean validation, responde 400)
 // regras de negocio (saldo, limites, categoria da compra, destino da transferencia) ficam no dominio
 // e resultam em transacao REJECTED com motivo, nao em erro 400
-// usuarioId vem no corpo por enquanto; com a seguranca (pedido 6) passa a vir do usuario autenticado
+// o dono da transacao e o usuario logado (seguranca, pedido 6); o usuarioId no corpo e opcional
 public class TransacaoRequestDTO {
 
-    @NotNull(message = "o usuarioId e obrigatorio")
+    // opcional desde a seguranca (pedido 6): sem ele, a transacao e do usuario logado
+    // se vier, tem que ser o id do proprio usuario logado (outro id responde 403)
     @Positive(message = "o usuarioId deve ser positivo")
     private Long usuarioId;
 

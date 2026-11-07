@@ -1,12 +1,18 @@
 package br.com.gabrieloliveira.transacoes.adapter.in.web;
 
 import br.com.gabrieloliveira.transacoes.adapter.in.web.dto.ErroResponseDTO;
+import br.com.gabrieloliveira.transacoes.domain.exception.AcessoNegadoException;
 import br.com.gabrieloliveira.transacoes.domain.exception.ParametroInvalidoException;
 import br.com.gabrieloliveira.transacoes.domain.exception.RecursoNaoEncontradoException;
 import br.com.gabrieloliveira.transacoes.domain.exception.RegraNegocioException;
 import br.com.gabrieloliveira.transacoes.domain.exception.ServicoExternoIndisponivelException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -39,6 +45,46 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErroResponseDTO> tratarParametroInvalido(ParametroInvalidoException ex,
                                                                   HttpServletRequest request) {
         return montarResposta(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null);
+    }
+
+    // 403: o usuario logado tentou ver ou mexer nos dados de outro usuario
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<ErroResponseDTO> tratarAcessoNegado(AcessoNegadoException ex,
+                                                             HttpServletRequest request) {
+        return montarResposta(HttpStatus.FORBIDDEN, ex.getMessage(), request, null);
+    }
+
+    // 403 vindo do proprio spring security (chega aqui pelo ErroDeSegurancaHandler)
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErroResponseDTO> tratarAcessoNegadoPelaSeguranca(AccessDeniedException ex,
+                                                                          HttpServletRequest request) {
+        return montarResposta(HttpStatus.FORBIDDEN, "voce nao tem permissao para acessar este recurso",
+                request, null);
+    }
+
+    // erros de login (chegam aqui pelo ErroDeSegurancaHandler):
+    // - AuthenticationServiceException: o ms1 esta fora do ar -> 503, porque o problema nao e do usuario
+    // - BadCredentialsException: email ou senha errados -> 401
+    // - outras (ex: InsufficientAuthenticationException): nao mandou login nenhum -> 401
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErroResponseDTO> tratarNaoAutenticado(AuthenticationException ex,
+                                                               HttpServletRequest request) {
+        if (ex instanceof AuthenticationServiceException) {
+            return montarResposta(HttpStatus.SERVICE_UNAVAILABLE,
+                    "nao foi possivel conferir o login agora (servico de usuarios indisponivel), tente novamente",
+                    request, null);
+        }
+
+        String mensagem = "faca login: envie o email e a senha do usuario (autenticacao basica)";
+        if (ex instanceof BadCredentialsException) {
+            mensagem = "email ou senha invalidos";
+        }
+        ErroResponseDTO corpo = new ErroResponseDTO(HttpStatus.UNAUTHORIZED.value(),
+                HttpStatus.UNAUTHORIZED.getReasonPhrase(), mensagem, request.getRequestURI(), null);
+        // o cabecalho WWW-Authenticate avisa o cliente que a rota espera autenticacao basica
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .header(HttpHeaders.WWW_AUTHENTICATE, "Basic realm=\"ms-transacoes\"")
+                .body(corpo);
     }
 
     // 503 (service unavailable): um servico externo (api mock, brasilapi) nao respondeu

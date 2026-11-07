@@ -16,6 +16,10 @@ public interface UsuarioRepositoryPort {
     // Optional e uma "caixinha" que pode vir vazia, quando o usuario nao existe
     Optional<Usuario> buscarPorId(Long id);
 
+    // usado na seguranca: o login e feito pelo email
+    // o email ja deve chegar normalizado (sem espacos e em minusculo), igual ele e guardado no banco
+    Optional<Usuario> buscarPorEmail(String email);
+
     Pagina<Usuario> listar(int numeroPagina, int tamanhoPagina);
 
     void excluirPorId(Long id);

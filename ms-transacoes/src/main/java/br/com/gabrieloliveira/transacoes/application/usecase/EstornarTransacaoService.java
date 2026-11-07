@@ -22,10 +22,18 @@ public class EstornarTransacaoService implements EstornarTransacaoUseCase {
     }
 
     @Override
-    public Transacao estornar(Long idTransacaoOriginal) {
+    public Transacao estornar(Long idTransacaoOriginal, Long usuarioSolicitanteId) {
         Transacao original = transacaoRepositoryPort.buscarPorId(idTransacaoOriginal)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(
                         "transacao com id " + idTransacaoOriginal + " nao encontrada"));
+
+        // seguranca (pedido 6): ninguem estorna a transacao de outro usuario
+        // responde 404, igual a uma transacao que nao existe (mesma regra do GET /transactions/{id}):
+        // assim ninguem descobre quais ids existem e sao de outras pessoas
+        // essa conferencia vem antes de todas as outras, pra nao contar nada sobre a transacao de outra pessoa
+        if (!original.getUsuarioId().equals(usuarioSolicitanteId)) {
+            throw new RecursoNaoEncontradoException("transacao com id " + idTransacaoOriginal + " nao encontrada");
+        }
 
         // transacao rejeitada nunca movimentou dinheiro, entao nao tem o que corrigir
         if (!original.isAprovada()) {

@@ -6,6 +6,7 @@ import br.com.gabrieloliveira.usuarios.application.port.out.UsuarioRepositoryPor
 import br.com.gabrieloliveira.usuarios.domain.exception.RegraNegocioException;
 import br.com.gabrieloliveira.usuarios.domain.model.Usuario;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 
 // implementa o caso de uso de criar usuario
@@ -16,9 +17,15 @@ public class CriarUsuarioService implements CriarUsuarioUseCase {
     private final UsuarioRepositoryPort usuarioRepositoryPort;
     private final SenhaEncoderPort senhaEncoderPort;
 
-    public CriarUsuarioService(UsuarioRepositoryPort usuarioRepositoryPort, SenhaEncoderPort senhaEncoderPort) {
+    // relogio no fuso de brasilia (bean do BeanConfig), o mesmo cuidado do ms2:
+    // num container em utc, um cadastro feito as 22h no brasil ficaria com a data do dia seguinte
+    private final Clock relogio;
+
+    public CriarUsuarioService(UsuarioRepositoryPort usuarioRepositoryPort, SenhaEncoderPort senhaEncoderPort,
+                               Clock relogio) {
         this.usuarioRepositoryPort = usuarioRepositoryPort;
         this.senhaEncoderPort = senhaEncoderPort;
+        this.relogio = relogio;
     }
 
     @Override
@@ -34,7 +41,7 @@ public class CriarUsuarioService implements CriarUsuarioUseCase {
         // a senha nunca vai pro banco do jeito que veio, so o hash dela
         novoUsuario.setSenha(senhaEncoderPort.codificar(novoUsuario.getSenha()));
         // a data de criacao e decidida aqui, no momento do cadastro
-        novoUsuario.setDataCriacao(LocalDateTime.now());
+        novoUsuario.setDataCriacao(LocalDateTime.now(relogio));
 
         return usuarioRepositoryPort.salvar(novoUsuario);
     }

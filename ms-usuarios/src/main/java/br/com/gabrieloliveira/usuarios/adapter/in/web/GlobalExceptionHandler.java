@@ -2,11 +2,18 @@ package br.com.gabrieloliveira.usuarios.adapter.in.web;
 
 import br.com.gabrieloliveira.usuarios.adapter.in.web.csv.ArquivoCsvInvalidoException;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.ErroResponseDTO;
+import br.com.gabrieloliveira.usuarios.adapter.in.web.seguranca.ChaveInternaInvalidaException;
+import br.com.gabrieloliveira.usuarios.domain.exception.AcessoNegadoException;
+import br.com.gabrieloliveira.usuarios.domain.exception.CredenciaisInvalidasException;
 import br.com.gabrieloliveira.usuarios.domain.exception.RecursoNaoEncontradoException;
 import br.com.gabrieloliveira.usuarios.domain.exception.RegraNegocioException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -33,6 +40,54 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErroResponseDTO> tratarNaoEncontrado(RecursoNaoEncontradoException ex,
                                                               HttpServletRequest request) {
         return montarResposta(HttpStatus.NOT_FOUND, ex.getMessage(), request, null);
+    }
+
+    // 401: o POST /auth/verificar recebeu email ou senha errados
+    @ExceptionHandler(CredenciaisInvalidasException.class)
+    public ResponseEntity<ErroResponseDTO> tratarCredenciaisInvalidas(CredenciaisInvalidasException ex,
+                                                                     HttpServletRequest request) {
+        return montarResposta(HttpStatus.UNAUTHORIZED, ex.getMessage(), request, null);
+    }
+
+    // 401: a seguranca barrou uma rota protegida (chega aqui pelo ErroDeSegurancaHandler)
+    // - BadCredentialsException: mandou email e senha, mas estao errados
+    // - outras (ex: InsufficientAuthenticationException): nao mandou login nenhum
+    // o cabecalho WWW-Authenticate avisa o cliente que a rota espera autenticacao basica
+    // (o navegador, por exemplo, abre a janelinha de usuario e senha quando ve esse cabecalho)
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErroResponseDTO> tratarNaoAutenticado(AuthenticationException ex,
+                                                               HttpServletRequest request) {
+        String mensagem = "faca login: envie o email e a senha do usuario (autenticacao basica)";
+        if (ex instanceof BadCredentialsException) {
+            mensagem = "email ou senha invalidos";
+        }
+        ErroResponseDTO corpo = new ErroResponseDTO(HttpStatus.UNAUTHORIZED.value(),
+                HttpStatus.UNAUTHORIZED.getReasonPhrase(), mensagem, request.getRequestURI(), null);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .header(HttpHeaders.WWW_AUTHENTICATE, "Basic realm=\"ms-usuarios\"")
+                .body(corpo);
+    }
+
+    // 403: chamaram o POST /auth/verificar sem a chave interna (so o ms2 pode usar essa rota)
+    @ExceptionHandler(ChaveInternaInvalidaException.class)
+    public ResponseEntity<ErroResponseDTO> tratarChaveInternaInvalida(ChaveInternaInvalidaException ex,
+                                                                     HttpServletRequest request) {
+        return montarResposta(HttpStatus.FORBIDDEN, ex.getMessage(), request, null);
+    }
+
+    // 403: o usuario esta logado, mas tentou mexer nos dados de outro usuario
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<ErroResponseDTO> tratarAcessoNegado(AcessoNegadoException ex,
+                                                             HttpServletRequest request) {
+        return montarResposta(HttpStatus.FORBIDDEN, ex.getMessage(), request, null);
+    }
+
+    // 403 vindo do proprio spring security (chega aqui pelo ErroDeSegurancaHandler)
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErroResponseDTO> tratarAcessoNegadoPelaSeguranca(AccessDeniedException ex,
+                                                                          HttpServletRequest request) {
+        return montarResposta(HttpStatus.FORBIDDEN, "voce nao tem permissao para acessar este recurso",
+                request, null);
     }
 
     // 409: quebrou uma regra, tipo email ou cpf repetido
