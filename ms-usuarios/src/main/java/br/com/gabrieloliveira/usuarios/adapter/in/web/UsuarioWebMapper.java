@@ -1,10 +1,14 @@
 package br.com.gabrieloliveira.usuarios.adapter.in.web;
 
+import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.FalhaImportacaoDTO;
+import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.ImportacaoResultadoDTO;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.PaginaResponseDTO;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.UsuarioRequestDTO;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.UsuarioResponseDTO;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.UsuarioUpdateRequestDTO;
+import br.com.gabrieloliveira.usuarios.domain.model.FalhaImportacao;
 import br.com.gabrieloliveira.usuarios.domain.model.Pagina;
+import br.com.gabrieloliveira.usuarios.domain.model.ResultadoImportacao;
 import br.com.gabrieloliveira.usuarios.domain.model.Usuario;
 import org.springframework.stereotype.Component;
 
@@ -49,6 +53,21 @@ public class UsuarioWebMapper {
                 usuario.getEmail(),
                 usuario.getCpf(),
                 usuario.getDataCriacao()
+        );
+    }
+
+    // resumo da importacao do dominio -> json de resposta do POST /users/import
+    public ImportacaoResultadoDTO paraImportacaoResponse(ResultadoImportacao resultado) {
+        List<FalhaImportacaoDTO> falhas = new ArrayList<>();
+        for (FalhaImportacao falha : resultado.getFalhas()) {
+            falhas.add(new FalhaImportacaoDTO(falha.getLinha(), falha.getMotivo()));
+        }
+
+        return new ImportacaoResultadoDTO(
+                resultado.getTotalLinhas(),
+                resultado.getImportados(),
+                resultado.getRejeitados(),
+                falhas
         );
     }
 
