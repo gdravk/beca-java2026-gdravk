@@ -17,9 +17,12 @@ public class ListarTransacoesService implements ListarTransacoesUseCase {
     private static final LocalDateTime SEM_DATA_FINAL = LocalDateTime.of(9999, 12, 31, 0, 0);
 
     private final TransacaoRepositoryPort transacaoRepositoryPort;
+    private final PreenchedorDeCotacoes preenchedorDeCotacoes;
 
-    public ListarTransacoesService(TransacaoRepositoryPort transacaoRepositoryPort) {
+    public ListarTransacoesService(TransacaoRepositoryPort transacaoRepositoryPort,
+                                   PreenchedorDeCotacoes preenchedorDeCotacoes) {
         this.transacaoRepositoryPort = transacaoRepositoryPort;
+        this.preenchedorDeCotacoes = preenchedorDeCotacoes;
     }
 
     @Override
@@ -39,6 +42,10 @@ public class ListarTransacoesService implements ListarTransacoesUseCase {
             ate = fim.plusDays(1).atStartOfDay();
         }
 
-        return transacaoRepositoryPort.listarPorUsuario(usuarioId, de, ate, tipo);
+        List<Transacao> transacoes = transacaoRepositoryPort.listarPorUsuario(usuarioId, de, ate, tipo);
+
+        // completa as taxas de quem foi gravado sem cambio; a brasilapi e chamada no maximo uma vez por moeda
+        preenchedorDeCotacoes.preencherFaltantes(transacoes);
+        return transacoes;
     }
 }
