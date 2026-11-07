@@ -15,6 +15,9 @@ import br.com.gabrieloliveira.usuarios.domain.exception.AcessoNegadoException;
 import br.com.gabrieloliveira.usuarios.domain.model.Pagina;
 import br.com.gabrieloliveira.usuarios.domain.model.Usuario;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,7 +36,13 @@ import org.springframework.web.bind.annotation.RestController;
 // repara que ele so conhece as interfaces (UseCase), nunca as classes que implementam
 @RestController
 @RequestMapping("/users")
+// validacao dos parametros da url (fase 13): @Positive, @Min e @Max direto no parametro
+// desde o spring 6.1 o proprio spring mvc valida esses parametros sozinho, sem precisar de @Validated na classe
+// (com @Validated a validacao rodaria duas vezes, uma pelo spring mvc e outra pelo proxy do @Validated)
+// quando falha, ele lanca HandlerMethodValidationException, que o GlobalExceptionHandler transforma em 400
 public class UsuarioController {
+
+    private static final String ID_POSITIVO = "o id deve ser um numero positivo";
 
     private final CriarUsuarioUseCase criarUsuarioUseCase;
     private final ListarUsuariosUseCase listarUsuariosUseCase;
@@ -72,8 +81,11 @@ public class UsuarioController {
     // cada usuario vem sem o cpf (dado pessoal), so com id, nome, email e data de criacao
     @GetMapping
     public ResponseEntity<PaginaResponseDTO<UsuarioResumoResponseDTO>> listar(
-            @RequestParam(defaultValue = "0") int pagina,
-            @RequestParam(defaultValue = "10") int tamanho) {
+            @RequestParam(defaultValue = "0")
+            @Min(value = 0, message = "a pagina comeca em 0 e nao pode ser negativa") int pagina,
+            @RequestParam(defaultValue = "10")
+            @Min(value = 1, message = "o tamanho da pagina deve ser de pelo menos 1")
+            @Max(value = 100, message = "o tamanho da pagina pode ser de no maximo 100") int tamanho) {
         Pagina<Usuario> resultado = listarUsuariosUseCase.listar(pagina, tamanho);
         return ResponseEntity.ok(usuarioWebMapper.paraPaginaResponse(resultado));
     }
@@ -82,7 +94,7 @@ public class UsuarioController {
     // so o proprio usuario pode ver os dados completos dele; o id de outra pessoa responde 403
     // @PathVariable pega o {id} que veio na url
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioResponseDTO> buscarPorId(@PathVariable Long id,
+    public ResponseEntity<UsuarioResponseDTO> buscarPorId(@PathVariable @Positive(message = ID_POSITIVO) Long id,
                                                           @AuthenticationPrincipal UsuarioAutenticado logado) {
         garantirQueEOProprioUsuario(id, logado, "voce so pode ver os dados da sua propria conta");
         Usuario usuario = buscarUsuarioUseCase.buscarPorId(id);
@@ -94,7 +106,7 @@ public class UsuarioController {
     // se o json nao trouxer "senha", a senha atual e mantida
     // @AuthenticationPrincipal entrega quem esta logado (o UsuarioAutenticado criado no login)
     @PutMapping("/{id}")
-    public ResponseEntity<UsuarioResponseDTO> atualizar(@PathVariable Long id,
+    public ResponseEntity<UsuarioResponseDTO> atualizar(@PathVariable @Positive(message = ID_POSITIVO) Long id,
                                                         @Valid @RequestBody UsuarioUpdateRequestDTO dto,
                                                         @AuthenticationPrincipal UsuarioAutenticado logado) {
         garantirQueEOProprioUsuario(id, logado, "voce so pode atualizar a sua propria conta");
@@ -105,7 +117,7 @@ public class UsuarioController {
 
     // DELETE /users/{id} -> exclui um usuario, responde 204 no content (sucesso, mas sem corpo)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluir(@PathVariable Long id,
+    public ResponseEntity<Void> excluir(@PathVariable @Positive(message = ID_POSITIVO) Long id,
                                         @AuthenticationPrincipal UsuarioAutenticado logado) {
         garantirQueEOProprioUsuario(id, logado, "voce so pode excluir a sua propria conta");
         excluirUsuarioUseCase.excluir(id);

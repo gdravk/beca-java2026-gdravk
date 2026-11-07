@@ -19,6 +19,11 @@ public class VerificadorDeChaveInterna {
 
     private static final int TAMANHO_MINIMO = 16;
 
+    // o valor de exemplo que esta no .env.example (que vai pro github)
+    // se alguem copiar o .env.example e esquecer de trocar a chave, qualquer um que leu o repositorio saberia a chave
+    // (sugestao da revisao do professor 06/11)
+    static final String CHAVE_DE_EXEMPLO = "troque_por_uma_chave_aleatoria";
+
     private final byte[] chaveEsperada;
 
     public VerificadorDeChaveInterna(@Value("${seguranca.chave-interna}") String chave) {
@@ -27,6 +32,10 @@ public class VerificadorDeChaveInterna {
         if (chave == null || chave.length() < TAMANHO_MINIMO) {
             throw new IllegalStateException("a variavel MS1_CHAVE_INTERNA precisa ter pelo menos "
                     + TAMANHO_MINIMO + " caracteres");
+        }
+        if (chave.equals(CHAVE_DE_EXEMPLO)) {
+            throw new IllegalStateException("a variavel MS1_CHAVE_INTERNA ainda esta com o valor de exemplo do "
+                    + ".env.example; troque por uma chave aleatoria sua");
         }
         this.chaveEsperada = chave.getBytes(StandardCharsets.UTF_8);
     }

@@ -1,5 +1,6 @@
 package br.com.gabrieloliveira.usuarios.adapter.in.web.dto;
 
+import br.com.gabrieloliveira.usuarios.adapter.in.web.validacao.SenhaCabeNoBcrypt;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -25,7 +26,8 @@ public class UsuarioRequestDTO {
     private String cpf;
 
     @NotBlank(message = "a senha e obrigatoria")
-    @Size(min = 6, max = 100, message = "a senha deve ter entre 6 e 100 caracteres")
+    @Size(min = 6, message = "a senha deve ter pelo menos 6 caracteres")
+    @SenhaCabeNoBcrypt
     private String senha;
 
     // construtor vazio pro jackson conseguir criar o objeto a partir do json
