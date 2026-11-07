@@ -1,5 +1,6 @@
 package br.com.gabrieloliveira.transacoes.config;
 
+import br.com.gabrieloliveira.transacoes.application.port.in.AnalisarDespesasUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.in.BuscarTransacaoUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.in.ConsultarSaldoUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.in.CriarTransacaoUseCase;
@@ -8,12 +9,14 @@ import br.com.gabrieloliveira.transacoes.application.port.in.ListarTransacoesUse
 import br.com.gabrieloliveira.transacoes.application.port.out.CambioPort;
 import br.com.gabrieloliveira.transacoes.application.port.out.SaldoContaPort;
 import br.com.gabrieloliveira.transacoes.application.port.out.TransacaoRepositoryPort;
+import br.com.gabrieloliveira.transacoes.application.usecase.AnalisarDespesasService;
 import br.com.gabrieloliveira.transacoes.application.usecase.BuscarTransacaoService;
 import br.com.gabrieloliveira.transacoes.application.usecase.ConsultarSaldoService;
 import br.com.gabrieloliveira.transacoes.application.usecase.CriarTransacaoService;
 import br.com.gabrieloliveira.transacoes.application.usecase.EstornarTransacaoService;
 import br.com.gabrieloliveira.transacoes.application.usecase.ListarTransacoesService;
 import br.com.gabrieloliveira.transacoes.application.usecase.PreenchedorDeCotacoes;
+import br.com.gabrieloliveira.transacoes.domain.service.AnalisadorDeDespesas;
 import br.com.gabrieloliveira.transacoes.domain.service.ValidadorDeTransacao;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -52,9 +55,10 @@ public class BeanConfig {
     public CriarTransacaoUseCase criarTransacaoUseCase(TransacaoRepositoryPort transacaoRepositoryPort,
                                                        SaldoContaPort saldoContaPort,
                                                        PreenchedorDeCotacoes preenchedorDeCotacoes,
-                                                       ValidadorDeTransacao validadorDeTransacao) {
+                                                       ValidadorDeTransacao validadorDeTransacao,
+                                                       Clock relogio) {
         return new CriarTransacaoService(transacaoRepositoryPort, saldoContaPort, preenchedorDeCotacoes,
-                validadorDeTransacao);
+                validadorDeTransacao, relogio);
     }
 
     @Bean
@@ -72,6 +76,19 @@ public class BeanConfig {
     @Bean
     public ConsultarSaldoUseCase consultarSaldoUseCase(SaldoContaPort saldoContaPort) {
         return new ConsultarSaldoService(saldoContaPort);
+    }
+
+    @Bean
+    public AnalisadorDeDespesas analisadorDeDespesas() {
+        return new AnalisadorDeDespesas();
+    }
+
+    // a analise usa o relogio (bean "relogio", la em cima) pra saber qual e o "mes atual"
+    @Bean
+    public AnalisarDespesasUseCase analisarDespesasUseCase(TransacaoRepositoryPort transacaoRepositoryPort,
+                                                           AnalisadorDeDespesas analisadorDeDespesas,
+                                                           Clock relogio) {
+        return new AnalisarDespesasService(transacaoRepositoryPort, analisadorDeDespesas, relogio);
     }
 
     @Bean

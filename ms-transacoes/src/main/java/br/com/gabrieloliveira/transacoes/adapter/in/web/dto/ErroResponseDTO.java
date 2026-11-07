@@ -1,11 +1,14 @@
 package br.com.gabrieloliveira.transacoes.adapter.in.web.dto;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Map;
 
 // formato padrao de erro da api, o mesmo usado no ms1
 // campos so vem preenchido nos erros de validacao (400), no formato "campo -> mensagem"
 public class ErroResponseDTO {
+
+    private static final ZoneId FUSO_BRASIL = ZoneId.of("America/Sao_Paulo");
 
     private LocalDateTime dataHora;
     private int status;
@@ -18,7 +21,8 @@ public class ErroResponseDTO {
     }
 
     public ErroResponseDTO(int status, String erro, String mensagem, String caminho, Map<String, String> campos) {
-        this.dataHora = LocalDateTime.now();
+        // horario de brasilia, igual ao resto da api (em container utc, o now() sozinho daria o horario de londres)
+        this.dataHora = LocalDateTime.now(FUSO_BRASIL);
         this.status = status;
         this.erro = erro;
         this.mensagem = mensagem;

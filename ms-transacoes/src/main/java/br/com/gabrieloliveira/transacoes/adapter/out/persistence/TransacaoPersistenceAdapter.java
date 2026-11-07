@@ -70,4 +70,16 @@ public class TransacaoPersistenceAdapter implements TransacaoRepositoryPort {
     public boolean existeEstornoAprovado(Long idTransacaoOriginal) {
         return transacaoJpaRepository.existsByTransacaoOriginalIdAndStatus(idTransacaoOriginal, StatusTransacao.APPROVED);
     }
+
+    @Override
+    public List<Transacao> listarDespesas(Long usuarioId, LocalDateTime de, LocalDateTime ate) {
+        List<TransacaoEntity> encontradas = transacaoJpaRepository.listarDespesas(usuarioId,
+                StatusTransacao.APPROVED, TIPOS_DE_SAIDA, de, ate);
+
+        List<Transacao> despesas = new ArrayList<>();
+        for (TransacaoEntity entity : encontradas) {
+            despesas.add(transacaoPersistenceMapper.paraDominio(entity));
+        }
+        return despesas;
+    }
 }

@@ -10,6 +10,7 @@ import br.com.gabrieloliveira.transacoes.domain.model.Transacao;
 import br.com.gabrieloliveira.transacoes.domain.service.ValidadorDeTransacao;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -32,19 +33,26 @@ public class CriarTransacaoService implements CriarTransacaoUseCase {
     private final PreenchedorDeCotacoes preenchedorDeCotacoes;
     private final ValidadorDeTransacao validadorDeTransacao;
 
+    // relogio no fuso de brasilia (bean do BeanConfig)
+    // sem ele, num container em utc, uma compra feita as 22h no brasil seria gravada no dia seguinte,
+    // e cairia no dia errado no limite diario e na analise de despesas
+    private final Clock relogio;
+
     public CriarTransacaoService(TransacaoRepositoryPort transacaoRepositoryPort,
                                  SaldoContaPort saldoContaPort,
                                  PreenchedorDeCotacoes preenchedorDeCotacoes,
-                                 ValidadorDeTransacao validadorDeTransacao) {
+                                 ValidadorDeTransacao validadorDeTransacao,
+                                 Clock relogio) {
         this.transacaoRepositoryPort = transacaoRepositoryPort;
         this.saldoContaPort = saldoContaPort;
         this.preenchedorDeCotacoes = preenchedorDeCotacoes;
         this.validadorDeTransacao = validadorDeTransacao;
+        this.relogio = relogio;
     }
 
     @Override
     public Transacao criar(Transacao novaTransacao) {
-        novaTransacao.setDataHora(LocalDateTime.now());
+        novaTransacao.setDataHora(LocalDateTime.now(relogio));
 
         Optional<String> erroNosDados = validadorDeTransacao.validarDados(novaTransacao);
         if (erroNosDados.isPresent()) {

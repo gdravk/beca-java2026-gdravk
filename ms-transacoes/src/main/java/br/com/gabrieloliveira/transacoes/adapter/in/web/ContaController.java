@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 
 // endpoints da conta do usuario (saldo e limites)
@@ -18,9 +19,12 @@ import java.time.LocalDateTime;
 public class ContaController {
 
     private final ConsultarSaldoUseCase consultarSaldoUseCase;
+    // relogio no fuso de brasilia, pra o "consultadoEm" da resposta sair no horario certo
+    private final Clock relogio;
 
-    public ContaController(ConsultarSaldoUseCase consultarSaldoUseCase) {
+    public ContaController(ConsultarSaldoUseCase consultarSaldoUseCase, Clock relogio) {
         this.consultarSaldoUseCase = consultarSaldoUseCase;
+        this.relogio = relogio;
     }
 
     // GET /accounts/{usuarioId}/balance -> 200 com saldo e limites lidos agora da api mock
@@ -33,7 +37,7 @@ public class ContaController {
                 conta.getSaldo(),
                 conta.getLimiteDiario(),
                 conta.getLimitePorTransacao(),
-                LocalDateTime.now()
+                LocalDateTime.now(relogio)
         );
         return ResponseEntity.ok(resposta);
     }
