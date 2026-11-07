@@ -1,5 +1,6 @@
 package br.com.gabrieloliveira.usuarios.adapter.in.web.dto;
 
+import br.com.gabrieloliveira.usuarios.adapter.in.web.validacao.SenhaCabeNoBcrypt;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -13,7 +14,7 @@ public class CredenciaisRequestDTO {
     private String email;
 
     @NotBlank(message = "a senha e obrigatoria")
-    @Size(max = 100, message = "a senha pode ter no maximo 100 caracteres")
+    @SenhaCabeNoBcrypt
     private String senha;
 
     public CredenciaisRequestDTO() {

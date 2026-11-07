@@ -116,7 +116,7 @@ class LeitorCsvUsuariosTest {
         LinhaImportacao linha = leitor.ler(bytes(csv)).get(0);
 
         assertFalse(linha.isValida());
-        assertEquals("o nome e obrigatorio; a senha deve ter entre 6 e 100 caracteres", linha.getErro());
+        assertEquals("o nome e obrigatorio; a senha deve ter pelo menos 6 caracteres", linha.getErro());
     }
 
     @Test

@@ -50,6 +50,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ValidacaoWebTest {
 
     static final String CHAVE_INTERNA = "chave-interna-dos-testes-123";
+
+    private static final String SENHA_ACIMA_DO_BCRYPT =
+            "a senha pode ter no maximo 72 bytes (72 letras sem acento; letra com acento conta como 2)";
     private static final String EMAIL = "ana@email.com";
     private static final String SENHA = "Senha@123";
     private static final Long ID_DA_ANA = 7L;
@@ -85,7 +88,7 @@ class ValidacaoWebTest {
                 .andExpect(jsonPath("$.campos.email").value("o email esta em formato invalido"))
                 .andExpect(jsonPath("$.campos.cpf")
                         .value("o cpf deve ter exatamente 11 numeros, sem ponto e sem traco"))
-                .andExpect(jsonPath("$.campos.senha").value("a senha deve ter entre 6 e 100 caracteres"));
+                .andExpect(jsonPath("$.campos.senha").value("a senha deve ter pelo menos 6 caracteres"));
 
         verify(criarUsuarioUseCase, never()).criar(any());
     }
@@ -175,7 +178,7 @@ class ValidacaoWebTest {
         mockMvc.perform(put("/users/" + ID_DA_ANA).with(httpBasic(EMAIL, SENHA))
                         .contentType(MediaType.APPLICATION_JSON).content(corpo))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.campos.senha").value("a senha deve ter entre 6 e 100 caracteres"));
+                .andExpect(jsonPath("$.campos.senha").value("a senha deve ter pelo menos 6 caracteres"));
     }
 
     @Test
@@ -232,15 +235,42 @@ class ValidacaoWebTest {
 
     @Test
     void verificarCredenciaisComSenhaGiganteResponde400SemProcurarNoBanco() throws Exception {
-        String senhaGigante = "a".repeat(101);
+        // 73 letras: uma a mais do que o bcrypt aceita
+        String senhaGigante = "a".repeat(73);
         String corpo = "{\"email\":\"ana@email.com\",\"senha\":\"" + senhaGigante + "\"}";
 
         mockMvc.perform(post("/auth/verificar").header(VerificadorDeChaveInterna.CABECALHO, CHAVE_INTERNA)
                         .contentType(MediaType.APPLICATION_JSON).content(corpo))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.campos.senha").value("a senha pode ter no maximo 100 caracteres"));
+                .andExpect(jsonPath("$.campos.senha").value(SENHA_ACIMA_DO_BCRYPT));
 
         verify(verificarCredenciaisUseCase, never()).verificar(anyString(), anyString());
+    }
+
+    @Test
+    void cadastroComSenhaDeLetrasComAcentoAcimaDe72BytesResponde400() throws Exception {
+        // 37 letras "c com cedilha" = 74 bytes: passaria num @Size(max = 72), mas quebraria o bcrypt
+        String senha = "ç".repeat(37);
+        String corpo = "{\"nome\":\"Ana Souza\",\"email\":\"ana@email.com\",\"cpf\":\"12345678901\",\"senha\":\""
+                + senha + "\"}";
+
+        mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON).content(corpo))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.campos.senha").value(SENHA_ACIMA_DO_BCRYPT));
+
+        verify(criarUsuarioUseCase, never()).criar(any());
+    }
+
+    @Test
+    void corpoEnviadoComoListaRespondeMalFormatado() throws Exception {
+        // mandaram [ {...} ] no lugar de { ... }: o jackson nao chega a nenhum campo,
+        // entao a resposta e a de corpo mal formatado (sem "campos")
+        mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON).content("[{\"nome\":\"Ana\"}]"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.mensagem").value("o corpo da requisicao esta mal formatado"))
+                .andExpect(jsonPath("$.campos").doesNotExist());
+
+        verify(criarUsuarioUseCase, never()).criar(any());
     }
 
     // apoio: faz o login de mentira dar certo como a ana (id 7)

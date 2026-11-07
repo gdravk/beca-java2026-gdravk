@@ -169,6 +169,13 @@ public class GlobalExceptionHandler {
             // o "path" e o caminho ate o campo; o ultimo pedaco e o nome do campo (ex: "nome")
             List<JacksonException.Reference> caminho = erroDoCampo.getPath();
             String campo = caminho.get(caminho.size() - 1).getPropertyName();
+            // quando o erro e num item de lista (ex: o corpo inteiro veio como [ ... ]), o ultimo pedaco do
+            // caminho e uma posicao (0, 1...) e nao um nome: o getPropertyName volta null
+            // uma chave null quebra o json da resposta, entao nesse caso o erro fica no "corpo"
+            // (ajuste da revisao do professor 06/11)
+            if (campo == null) {
+                campo = "corpo";
+            }
             Map<String, String> campos = new LinkedHashMap<>();
             campos.put(campo, "o campo veio com um tipo de dado errado, envie um texto");
             return montarResposta(HttpStatus.BAD_REQUEST, "existem campos invalidos na requisicao", request, campos);

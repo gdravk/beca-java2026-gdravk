@@ -116,7 +116,7 @@ class ImportarUsuariosServiceTest {
         List<LinhaImportacao> linhas = List.of(
                 LinhaImportacao.invalida(2, "o nome e obrigatorio"),
                 LinhaImportacao.valida(3, usuario("bruno@email.com")),
-                LinhaImportacao.invalida(4, "a senha deve ter entre 6 e 100 caracteres"));
+                LinhaImportacao.invalida(4, "a senha deve ter pelo menos 6 caracteres"));
 
         ResultadoImportacao resultado = importarUsuariosService.importar(linhas);
 

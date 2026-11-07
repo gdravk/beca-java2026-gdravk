@@ -1,5 +1,6 @@
 package br.com.gabrieloliveira.usuarios.adapter.in.web.dto;
 
+import br.com.gabrieloliveira.usuarios.adapter.in.web.validacao.SenhaCabeNoBcrypt;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -30,7 +31,8 @@ public class UsuarioUpdateRequestDTO {
     // repara que aqui NAO tem @NotBlank: por isso a senha pode faltar no json
     // o @Size so e checado quando a senha vem preenchida (para valor null ele nao faz nada)
     // entao: senha ausente = ok (mantem a atual) / senha "123" = erro 400 / senha "nova123" = troca
-    @Size(min = 6, max = 100, message = "a senha deve ter entre 6 e 100 caracteres")
+    @Size(min = 6, message = "a senha deve ter pelo menos 6 caracteres")
+    @SenhaCabeNoBcrypt
     private String senha;
 
     // construtor vazio pro jackson conseguir criar o objeto a partir do json

@@ -15,7 +15,7 @@ A rota exige login (autenticação básica com e-mail e senha de um usuário já
 | `nome` | obrigatório, máximo de 100 caracteres |
 | `email` | obrigatório, formato válido, máximo de 150 caracteres, único (não pode existir no banco nem se repetir no arquivo) |
 | `cpf` | obrigatório, exatamente 11 números (sem ponto e sem traço), único |
-| `senha` | obrigatória, de 6 a 100 caracteres (gravada criptografada com BCrypt) |
+| `senha` | obrigatória, de 6 a 72 caracteres (limite do BCrypt: 72 bytes, letra com acento conta como 2; gravada criptografada) |
 
 As senhas do exemplo são fictícias (`Senha@123`).
 

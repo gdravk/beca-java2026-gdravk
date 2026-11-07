@@ -27,6 +27,10 @@ public class Ms1AutenticacaoAdapter implements AutenticacaoPort {
     // nome do cabecalho onde vai a chave interna (o mesmo que o ms1 espera)
     private static final String CABECALHO_CHAVE_INTERNA = "X-Chave-Interna";
 
+    // o valor de exemplo que esta no .env.example (que vai pro github): se ninguem trocou, a chave nao e segredo
+    // (sugestao da revisao do professor 06/11; o ms1 faz a mesma conferencia)
+    static final String CHAVE_DE_EXEMPLO = "troque_por_uma_chave_aleatoria";
+
     private final RestClient restClient;
 
     // segredo compartilhado com o ms1 (variavel MS1_CHAVE_INTERNA do .env)
@@ -37,6 +41,11 @@ public class Ms1AutenticacaoAdapter implements AutenticacaoPort {
     public Ms1AutenticacaoAdapter(@Value("${ms1.base-url}") String baseUrl,
                                   @Value("${ms1.timeout-ms}") int timeoutMs,
                                   @Value("${ms1.chave-interna}") String chaveInterna) {
+        // a aplicacao nem sobe com a chave vazia ou com a de exemplo: melhor descobrir o erro de configuracao ja
+        if (chaveInterna == null || chaveInterna.isBlank() || chaveInterna.equals(CHAVE_DE_EXEMPLO)) {
+            throw new IllegalStateException("a variavel MS1_CHAVE_INTERNA esta vazia ou com o valor de exemplo do "
+                    + ".env.example; use a mesma chave aleatoria configurada no ms1");
+        }
         this.chaveInterna = chaveInterna;
         // mesmos tempos maximos de espera usados na api mock: sem eles, com o ms1 travado,
         // toda requisicao do ms2 ficaria pendurada esperando
