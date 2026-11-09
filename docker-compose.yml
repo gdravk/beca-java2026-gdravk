@@ -1,12 +1,18 @@
+# ambiente completo: 2 bancos + 2 aplicacoes
+# subir tudo: docker compose up -d --build
+#
+# as variaveis ${...} vem do arquivo .env da raiz (o compose le ele sozinho)
+# ${NOME:?mensagem} = variavel obrigatoria: se faltar no .env, o compose para na hora e mostra a mensagem
+# (sem isso ele usaria um valor vazio e a aplicacao falharia depois, com um erro bem mais dificil de entender)
 services:
   users-db:
     image: postgres:16-alpine
     container_name: users-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${USERS_DB_NAME}
-      POSTGRES_USER: ${USERS_DB_USER}
-      POSTGRES_PASSWORD: ${USERS_DB_PASSWORD}
+      POSTGRES_DB: ${USERS_DB_NAME:?defina USERS_DB_NAME no .env}
+      POSTGRES_USER: ${USERS_DB_USER:?defina USERS_DB_USER no .env}
+      POSTGRES_PASSWORD: ${USERS_DB_PASSWORD:?defina USERS_DB_PASSWORD no .env}
     ports:
       - "5432:5432"
     volumes:
@@ -22,9 +28,9 @@ services:
     container_name: transactions-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${TRANSACTIONS_DB_NAME}
-      POSTGRES_USER: ${TRANSACTIONS_DB_USER}
-      POSTGRES_PASSWORD: ${TRANSACTIONS_DB_PASSWORD}
+      POSTGRES_DB: ${TRANSACTIONS_DB_NAME:?defina TRANSACTIONS_DB_NAME no .env}
+      POSTGRES_USER: ${TRANSACTIONS_DB_USER:?defina TRANSACTIONS_DB_USER no .env}
+      POSTGRES_PASSWORD: ${TRANSACTIONS_DB_PASSWORD:?defina TRANSACTIONS_DB_PASSWORD no .env}
     ports:
       - "5433:5432"
     volumes:
@@ -34,6 +40,72 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # ---------- aplicacoes ----------
+  # build: o compose gera a imagem a partir do Dockerfile de cada pasta
+  # dentro do docker cada container chama o outro pelo NOME do servico, e nao por localhost
+  # TZ: fuso de brasilia, pra o horario dos logs bater com o relogio do computador
+  # (o horario gravado nas transacoes ja e de brasilia de qualquer jeito: vem do bean "relogio" do codigo)
+  # healthcheck: o docker chama o /v3/api-docs (rota aberta) a cada 10s; respondeu 200 = aplicacao pronta
+  # start_period: tempo pra aplicacao subir (cerca de 20s) sem que as falhas desse inicio contem
+
+  ms-usuarios:
+    build: ./ms-usuarios
+    container_name: ms-usuarios
+    restart: unless-stopped
+    environment:
+      TZ: America/Sao_Paulo
+      USERS_DB_HOST: users-db
+      USERS_DB_PORT: 5432
+      USERS_DB_NAME: ${USERS_DB_NAME:?defina USERS_DB_NAME no .env}
+      USERS_DB_USER: ${USERS_DB_USER:?defina USERS_DB_USER no .env}
+      USERS_DB_PASSWORD: ${USERS_DB_PASSWORD:?defina USERS_DB_PASSWORD no .env}
+      MS1_CHAVE_INTERNA: ${MS1_CHAVE_INTERNA:?defina MS1_CHAVE_INTERNA no .env (a mesma chave vale para o ms1 e o ms2)}
+    ports:
+      - "8081:8081"
+    # so sobe depois que o banco responder no healthcheck (antes disso a conexao falharia)
+    depends_on:
+      users-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "-o", "/dev/null", "http://localhost:8081/v3/api-docs"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  ms-transacoes:
+    build: ./ms-transacoes
+    container_name: ms-transacoes
+    restart: unless-stopped
+    environment:
+      TZ: America/Sao_Paulo
+      # porta 5432: e a porta de DENTRO do container; a 5433 so existe no windows
+      TRANSACTIONS_DB_HOST: transactions-db
+      TRANSACTIONS_DB_PORT: 5432
+      TRANSACTIONS_DB_NAME: ${TRANSACTIONS_DB_NAME:?defina TRANSACTIONS_DB_NAME no .env}
+      TRANSACTIONS_DB_USER: ${TRANSACTIONS_DB_USER:?defina TRANSACTIONS_DB_USER no .env}
+      TRANSACTIONS_DB_PASSWORD: ${TRANSACTIONS_DB_PASSWORD:?defina TRANSACTIONS_DB_PASSWORD no .env}
+      MOCKAPI_BASE_URL: ${MOCKAPI_BASE_URL:?defina MOCKAPI_BASE_URL no .env}
+      BRASILAPI_BASE_URL: ${BRASILAPI_BASE_URL:-https://brasilapi.com.br/api}
+      # o ms2 confere o login no ms1 pelo nome do servico
+      MS1_URL: http://ms-usuarios:8081
+      MS1_CHAVE_INTERNA: ${MS1_CHAVE_INTERNA:?defina MS1_CHAVE_INTERNA no .env (a mesma chave vale para o ms1 e o ms2)}
+    ports:
+      - "8082:8082"
+    # o ms2 confere todo login no ms1: sobe so depois que o ms1 estiver pronto (healthy),
+    # senao as primeiras chamadas responderiam 503
+    depends_on:
+      transactions-db:
+        condition: service_healthy
+      ms-usuarios:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "-o", "/dev/null", "http://localhost:8082/v3/api-docs"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
 volumes:
   users-db-data:
