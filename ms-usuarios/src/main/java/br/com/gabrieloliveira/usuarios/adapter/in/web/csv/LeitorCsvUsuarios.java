@@ -39,8 +39,8 @@ public class LeitorCsvUsuarios {
     private static final int MAXIMO_LINHAS = 1000;
 
     // o BOM e um caractere invisivel que o excel e o bloco de notas colocam no comeco de arquivos utf-8
-    // se ele nao for removido, o cabecalho vira "﻿nome;email;cpf;senha" e nao bate com o esperado
-    private static final char BOM = '﻿';
+    // se ele nao for removido, o cabecalho vira "\uFEFFnome;email;cpf;senha" e nao bate com o esperado
+    private static final char BOM = '\uFEFF';
 
     // a ordem dos campos no arquivo, usada pra montar a mensagem de erro sempre na mesma ordem
     private static final List<String> ORDEM_DOS_CAMPOS = List.of("nome", "email", "cpf", "senha");

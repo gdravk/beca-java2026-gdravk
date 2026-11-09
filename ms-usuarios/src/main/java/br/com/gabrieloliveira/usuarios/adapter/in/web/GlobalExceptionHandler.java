@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.context.MessageSourceResolvable;
@@ -268,6 +269,9 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(),
                 campos
         );
-        return ResponseEntity.status(status).body(corpo);
+        // contentType(JSON) explicito: o erro sai em json mesmo quando o cliente pediu outro formato
+        // (ex: o download do relatorio pede "Accept: text/csv"); sem isso o spring tentaria escrever o erro
+        // em csv, nao conseguiria, e a resposta sairia sem corpo nenhum
+        return ResponseEntity.status(status).contentType(MediaType.APPLICATION_JSON).body(corpo);
     }
 }

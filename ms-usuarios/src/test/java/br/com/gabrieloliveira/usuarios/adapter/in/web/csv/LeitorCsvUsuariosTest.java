@@ -63,8 +63,8 @@ class LeitorCsvUsuariosTest {
 
     @Test
     void deveAceitarArquivoComBomEQuebraDeLinhaDoWindows() {
-        // ﻿ = BOM (o excel coloca no comeco), \r\n = quebra de linha do windows
-        String csv = "﻿nome;email;cpf;senha\r\nJoão Pereira;joao@email.com;12345678901;Senha@123\r\n";
+        // \uFEFF = BOM (o excel coloca no comeco), \r\n = quebra de linha do windows
+        String csv = "\uFEFFnome;email;cpf;senha\r\nJoão Pereira;joao@email.com;12345678901;Senha@123\r\n";
 
         List<LinhaImportacao> linhas = leitor.ler(bytes(csv));
 

@@ -6,6 +6,7 @@ import br.com.gabrieloliveira.transacoes.application.port.in.BuscarTransacaoUseC
 import br.com.gabrieloliveira.transacoes.application.port.in.ConsultarSaldoUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.in.CriarTransacaoUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.in.EstornarTransacaoUseCase;
+import br.com.gabrieloliveira.transacoes.application.port.in.GerarRelatorioUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.in.ListarTransacoesUseCase;
 import br.com.gabrieloliveira.transacoes.application.port.out.AutenticacaoPort;
 import br.com.gabrieloliveira.transacoes.application.port.out.CambioPort;
@@ -17,6 +18,7 @@ import br.com.gabrieloliveira.transacoes.application.usecase.BuscarTransacaoServ
 import br.com.gabrieloliveira.transacoes.application.usecase.ConsultarSaldoService;
 import br.com.gabrieloliveira.transacoes.application.usecase.CriarTransacaoService;
 import br.com.gabrieloliveira.transacoes.application.usecase.EstornarTransacaoService;
+import br.com.gabrieloliveira.transacoes.application.usecase.GerarRelatorioService;
 import br.com.gabrieloliveira.transacoes.application.usecase.ListarTransacoesService;
 import br.com.gabrieloliveira.transacoes.application.usecase.PreenchedorDeCotacoes;
 import br.com.gabrieloliveira.transacoes.domain.service.AnalisadorDeDespesas;
@@ -105,5 +107,13 @@ public class BeanConfig {
     public EstornarTransacaoUseCase estornarTransacaoUseCase(TransacaoRepositoryPort transacaoRepositoryPort,
                                                              CriarTransacaoUseCase criarTransacaoUseCase) {
         return new EstornarTransacaoService(transacaoRepositoryPort, criarTransacaoUseCase);
+    }
+
+    // relatorio csv (pedido 7): usa o relogio pra saber qual e o "mes atual", igual a analise
+    @Bean
+    public GerarRelatorioUseCase gerarRelatorioUseCase(TransacaoRepositoryPort transacaoRepositoryPort,
+                                                       PreenchedorDeCotacoes preenchedorDeCotacoes,
+                                                       Clock relogio) {
+        return new GerarRelatorioService(transacaoRepositoryPort, preenchedorDeCotacoes, relogio);
     }
 }
