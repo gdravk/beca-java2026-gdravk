@@ -2,18 +2,24 @@ package br.com.gabrieloliveira.transacoes.adapter.in.web.dto;
 
 import br.com.gabrieloliveira.transacoes.domain.model.Categoria;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.math.BigDecimal;
 
 // uma linha do resumo por categoria no json
 // ex: { "categoria": "ALIMENTACAO", "quantidade": 3, "total": 150.00, "percentual": 60.00 }
 @JsonPropertyOrder({"categoria", "quantidade", "total", "percentual"})
+@Schema(description = "total de uma categoria")
 public class DespesaPorCategoriaDTO {
 
+    @Schema(description = "categoria", example = "ALIMENTACAO")
     private Categoria categoria;
+    @Schema(description = "quantas despesas dessa categoria", example = "3")
     private int quantidade;
+    @Schema(description = "soma em reais", example = "150.00")
     private BigDecimal total;
     // quanto essa categoria representa do total gasto no periodo, em %
+    @Schema(description = "quanto essa categoria representa do total, em %", example = "60.00")
     private BigDecimal percentual;
 
     public DespesaPorCategoriaDTO() {

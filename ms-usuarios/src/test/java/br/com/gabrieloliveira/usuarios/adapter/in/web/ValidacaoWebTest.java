@@ -32,11 +32,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -143,7 +146,9 @@ class ValidacaoWebTest {
         mockMvc.perform(get("/usuarios").with(httpBasic(EMAIL, SENHA)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.mensagem").value("a rota /usuarios nao existe"))
-                .andExpect(jsonPath("$.trace").doesNotExist());
+                .andExpect(jsonPath("$.trace").doesNotExist())
+                // confere o texto do json: o jsonPath doesNotExist tambem passaria com "campos": null
+                .andExpect(content().string(not(containsString("\"campos\""))));
     }
 
     @Test

@@ -1,6 +1,7 @@
 package br.com.gabrieloliveira.transacoes.adapter.in.web.dto;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.math.BigDecimal;
 
@@ -8,10 +9,14 @@ import java.math.BigDecimal;
 // ex: { "mes": "2026-11", "quantidade": 7, "total": 420.00 }
 // o mes vai como texto "ano-mes" (o mapper usa o toString do YearMonth, que ja sai nesse formato)
 @JsonPropertyOrder({"mes", "quantidade", "total"})
+@Schema(description = "total de um mes")
 public class DespesaPorMesDTO {
 
+    @Schema(description = "ano e mes (aaaa-mm)", example = "2026-11")
     private String mes;
+    @Schema(description = "quantas despesas nesse mes", example = "7")
     private int quantidade;
+    @Schema(description = "soma em reais", example = "420.00")
     private BigDecimal total;
 
     public DespesaPorMesDTO() {

@@ -2,10 +2,18 @@ package br.com.gabrieloliveira.usuarios.adapter.in.web;
 
 import br.com.gabrieloliveira.usuarios.adapter.in.web.csv.ArquivoCsvInvalidoException;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.csv.LeitorCsvUsuarios;
+import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.ErroResponseDTO;
 import br.com.gabrieloliveira.usuarios.adapter.in.web.dto.ImportacaoResultadoDTO;
 import br.com.gabrieloliveira.usuarios.application.port.in.ImportarUsuariosUseCase;
 import br.com.gabrieloliveira.usuarios.domain.model.LinhaImportacao;
 import br.com.gabrieloliveira.usuarios.domain.model.ResultadoImportacao;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +37,7 @@ import java.util.Locale;
 // 4. aqui de novo: converte o resumo em json e responde 200
 @RestController
 @RequestMapping("/users")
+@Tag(name = "Importacao de usuarios", description = "cadastro em massa a partir de um arquivo csv")
 public class ImportacaoUsuariosController {
 
     private static final String EXTENSAO_CSV = ".csv";
@@ -50,8 +59,23 @@ public class ImportacaoUsuariosController {
     // o consumes avisa o spring (e o swagger) que essa rota recebe arquivo, e nao json;
     // por causa dele o swagger mostra um botao de escolher arquivo
     // a resposta e 200 mesmo quando algumas linhas falham: o arquivo foi processado, e o resumo diz o que entrou
+    @Operation(summary = "Importa usuarios de um arquivo csv",
+            description = "Arquivo .csv em UTF-8, separado por ponto e virgula, com o cabecalho nome;email;cpf;senha. "
+                    + "Ate 1000 usuarios e 2MB. Linhas com erro nao impedem as outras: a resposta conta "
+                    + "quantas entraram e lista o motivo de cada linha rejeitada.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "arquivo processado (veja importados, rejeitados e falhas)"),
+            @ApiResponse(responseCode = "400", description = "arquivo vazio, nao e .csv, cabecalho errado ou faltou o arquivo",
+                    content = @Content(schema = @Schema(implementation = ErroResponseDTO.class))),
+            @ApiResponse(responseCode = "401", description = "sem login ou com email/senha errados",
+                    content = @Content(schema = @Schema(implementation = ErroResponseDTO.class))),
+            @ApiResponse(responseCode = "413", description = "arquivo maior que 2MB",
+                    content = @Content(schema = @Schema(implementation = ErroResponseDTO.class)))
+    })
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ImportacaoResultadoDTO> importar(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<ImportacaoResultadoDTO> importar(
+            @Parameter(description = "o arquivo .csv com os usuarios")
+            @RequestParam("file") MultipartFile file) {
         conferirArquivo(file);
 
         List<LinhaImportacao> linhas = leitorCsvUsuarios.ler(lerConteudo(file));

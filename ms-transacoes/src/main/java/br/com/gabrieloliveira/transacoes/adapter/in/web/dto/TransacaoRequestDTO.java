@@ -2,6 +2,7 @@ package br.com.gabrieloliveira.transacoes.adapter.in.web.dto;
 
 import br.com.gabrieloliveira.transacoes.domain.model.Categoria;
 import br.com.gabrieloliveira.transacoes.domain.model.TipoTransacao;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,30 +16,37 @@ import java.math.BigDecimal;
 // regras de negocio (saldo, limites, categoria da compra, destino da transferencia) ficam no dominio
 // e resultam em transacao REJECTED com motivo, nao em erro 400
 // o dono da transacao e o usuario logado (seguranca, pedido 6); o usuarioId no corpo e opcional
+@Schema(description = "dados para registrar uma transacao")
 public class TransacaoRequestDTO {
 
     // opcional desde a seguranca (pedido 6): sem ele, a transacao e do usuario logado
     // se vier, tem que ser o id do proprio usuario logado (outro id responde 403)
     @Positive(message = "o usuarioId deve ser positivo")
+    @Schema(description = "opcional: sem ele, a transacao e do usuario logado; se vier, tem que ser o id dele", example = "1", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Long usuarioId;
 
     @NotNull(message = "o tipo e obrigatorio (DEPOSITO, RETIRADA, TRANSFERENCIA ou COMPRA)")
+    @Schema(description = "DEPOSITO entra dinheiro; RETIRADA, TRANSFERENCIA e COMPRA sao saidas e conferem saldo e limites", example = "COMPRA")
     private TipoTransacao tipo;
 
     @NotNull(message = "o valor e obrigatorio")
     @Positive(message = "o valor deve ser maior que zero")
     @Digits(integer = 13, fraction = 2, message = "o valor deve ter no maximo 2 casas decimais")
+    @Schema(description = "valor em reais, maior que zero e com no maximo 2 casas decimais", example = "150.75")
     private BigDecimal valor;
 
     // obrigatoria so para COMPRA (regra do dominio)
+    @Schema(description = "obrigatoria so para COMPRA; nos outros tipos, sem ela vira OUTROS", example = "ALIMENTACAO", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Categoria categoria;
 
     @NotBlank(message = "a descricao e obrigatoria")
     @Size(max = 255, message = "a descricao pode ter no maximo 255 caracteres")
+    @Schema(description = "descricao livre", example = "mercado do mes")
     private String descricao;
 
     // obrigatorio so para TRANSFERENCIA (regra do dominio)
     @Positive(message = "o usuarioDestinoId deve ser positivo")
+    @Schema(description = "obrigatorio so para TRANSFERENCIA: o id de quem recebe (nao pode ser o proprio usuario)", example = "2", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Long usuarioDestinoId;
 
     public TransacaoRequestDTO() {

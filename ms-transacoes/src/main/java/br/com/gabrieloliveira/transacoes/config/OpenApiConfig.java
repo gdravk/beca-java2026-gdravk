@@ -13,7 +13,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
         info = @Info(title = "MS2 - Transacoes", version = "1.0",
-                description = "transacoes, saldo, cambio e analise de despesas"),
+                description = "Transacoes, saldo, cambio e analise de despesas. Para usar: clique em Authorize e entre com o "
+                        + "email e a senha de um usuario cadastrado no ms1 (o login e conferido no ms1 a cada chamada). "
+                        + "Todos os erros vem no formato ErroResponseDTO."),
         security = @SecurityRequirement(name = "basicAuth"))
 @SecurityScheme(name = "basicAuth", type = SecuritySchemeType.HTTP, scheme = "basic",
         description = "use o email e a senha de um usuario cadastrado no ms1")

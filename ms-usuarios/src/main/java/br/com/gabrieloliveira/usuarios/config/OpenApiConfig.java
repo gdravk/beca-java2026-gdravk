@@ -14,7 +14,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
         info = @Info(title = "MS1 - Usuarios", version = "1.0",
-                description = "cadastro de usuarios, importacao por csv e verificacao de login"),
+                description = "Cadastro de usuarios, importacao por csv e verificacao de login. O cadastro (POST /users) e "
+                        + "aberto; para as outras rotas, clique em Authorize e entre com o email e a senha de um usuario "
+                        + "cadastrado. Todos os erros vem no formato ErroResponseDTO."),
         security = @SecurityRequirement(name = "basicAuth"))
 @SecurityScheme(name = "basicAuth", type = SecuritySchemeType.HTTP, scheme = "basic",
         description = "use o email e a senha de um usuario cadastrado")

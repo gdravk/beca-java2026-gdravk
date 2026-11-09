@@ -4,6 +4,7 @@ import br.com.gabrieloliveira.transacoes.domain.model.Categoria;
 import br.com.gabrieloliveira.transacoes.domain.model.StatusTransacao;
 import br.com.gabrieloliveira.transacoes.domain.model.TipoTransacao;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,21 +16,36 @@ import java.util.List;
 @JsonPropertyOrder({"id", "usuarioId", "tipo", "valorEmReais", "categoria", "descricao", "usuarioDestinoId",
         "status", "motivoRejeicao", "dataHora", "transacaoOriginalId",
         "conversoes", "conversaoDisponivel", "mensagemConversao"})
+@Schema(description = "uma transacao gravada, com o valor em reais e convertido para dolar e euro")
 public class TransacaoResponseDTO {
 
+    @Schema(description = "id da transacao", example = "10")
     private Long id;
+    @Schema(description = "dono da transacao", example = "1")
     private Long usuarioId;
+    @Schema(description = "tipo da transacao", example = "COMPRA")
     private TipoTransacao tipo;
+    @Schema(description = "valor em reais", example = "150.75")
     private BigDecimal valorEmReais;
+    @Schema(description = "categoria (OUTROS quando nao foi informada)", example = "ALIMENTACAO")
     private Categoria categoria;
+    @Schema(description = "descricao livre", example = "mercado do mes")
     private String descricao;
+    @Schema(description = "quem recebeu (so em TRANSFERENCIA)", example = "2")
     private Long usuarioDestinoId;
+    @Schema(description = "APPROVED (aprovada) ou REJECTED (rejeitada)", example = "APPROVED")
     private StatusTransacao status;
+    @Schema(description = "por que foi rejeitada (so quando REJECTED)", example = "saldo insuficiente")
     private String motivoRejeicao;
+    @Schema(description = "data e hora do registro (horario de Brasilia)", example = "2026-11-05T14:30:00")
     private LocalDateTime dataHora;
+    @Schema(description = "so nos estornos: o id da transacao que foi estornada", example = "7")
     private Long transacaoOriginalId;
+    @Schema(description = "o valor convertido para dolar (USD) e euro (EUR), com a cotacao da BrasilAPI")
     private List<ConversaoMoedaDTO> conversoes;
+    @Schema(description = "false quando alguma cotacao nao estava disponivel", example = "true")
     private boolean conversaoDisponivel;
+    @Schema(description = "explica quais moedas ficaram sem conversao (so quando conversaoDisponivel = false)", example = "conversao indisponivel no momento para: EUR")
     private String mensagemConversao;
 
     public TransacaoResponseDTO() {

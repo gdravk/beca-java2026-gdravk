@@ -3,8 +3,16 @@ package br.com.gabrieloliveira.transacoes.adapter.in.web;
 import br.com.gabrieloliveira.transacoes.adapter.in.web.dto.DespesasPorCategoriaResponseDTO;
 import br.com.gabrieloliveira.transacoes.adapter.in.web.dto.DespesasPorDiaResponseDTO;
 import br.com.gabrieloliveira.transacoes.adapter.in.web.dto.DespesasPorMesResponseDTO;
+import br.com.gabrieloliveira.transacoes.adapter.in.web.dto.ErroResponseDTO;
 import br.com.gabrieloliveira.transacoes.adapter.in.web.seguranca.UsuarioLogado;
 import br.com.gabrieloliveira.transacoes.application.port.in.AnalisarDespesasUseCase;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Positive;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +34,10 @@ import java.time.LocalDate;
 @RequestMapping("/transactions/analysis")
 // os ids da url e do filtro sao validados direto no parametro (fase 13): zero ou negativo responde 400
 // o spring mvc faz essa validacao sozinho (sem @Validated), igual no ms1
+//
+// swagger (fase 15): as tres rotas recebem os mesmos parametros e podem dar os mesmos erros
+// despesa = saida aprovada (RETIRADA, TRANSFERENCIA, COMPRA) que nao e estorno e nao foi estornada
+@Tag(name = "Analise de despesas", description = "quanto o usuario logado gastou, por categoria, por dia e por mes")
 public class AnaliseDespesasController {
 
     private static final String ID_POSITIVO = "o id deve ser um numero positivo";
@@ -43,10 +55,29 @@ public class AnaliseDespesasController {
     }
 
     // total de cada categoria e o total geral, da categoria que mais gastou pra que menos gastou
+    @Operation(summary = "Despesas por categoria",
+            description = "Total e percentual de cada categoria, da que mais gastou para a que menos gastou. "
+                    + "Sem datas, usa o mes atual.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "resumo das despesas do periodo"),
+            @ApiResponse(responseCode = "400", description = "data em formato errado ou inicio depois do fim",
+                    content = @Content(schema = @Schema(implementation = ErroResponseDTO.class))),
+            @ApiResponse(responseCode = "401", description = "sem login ou com email/senha errados",
+                    content = @Content(schema = @Schema(implementation = ErroResponseDTO.class))),
+            @ApiResponse(responseCode = "403", description = "o usuarioId e de outro usuario",
+                    content = @Content(schema = @Schema(implementation = ErroResponseDTO.class))),
+            @ApiResponse(responseCode = "503", description = "ms1 fora do ar (nao da para conferir o login)",
+                    content = @Content(schema = @Schema(implementation = ErroResponseDTO.class)))
+    })
     @GetMapping("/category")
     public ResponseEntity<DespesasPorCategoriaResponseDTO> porCategoria(
+            @Parameter(description = "opcional; se vier, tem que ser o id do usuario logado", example = "1")
             @RequestParam(required = false) @Positive(message = ID_POSITIVO) Long usuarioId,
+            @Parameter(description = "data inicial (aaaa-mm-dd); sem ela, comeca no dia 1 do mes do fim "
+                    + "(ou do mes atual)", example = "2026-11-01")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
+            @Parameter(description = "data final (aaaa-mm-dd), o dia inteiro entra; sem ela, vai ate o fim "
+                    + "do mes atual", example = "2026-11-30")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim) {
         Long dono = usuarioLogado.resolverUsuario(usuarioId);
         return ResponseEntity.ok(analiseDespesasWebMapper.paraCategoriaResponse(
@@ -54,10 +85,28 @@ public class AnaliseDespesasController {
     }
 
     // total gasto em cada dia do periodo (so os dias com despesa)
+    @Operation(summary = "Despesas por dia",
+            description = "Total gasto em cada dia do periodo (so os dias com despesa). Sem datas, usa o mes atual.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "resumo das despesas do periodo"),
+            @ApiResponse(responseCode = "400", description = "data em formato errado ou inicio depois do fim",
+                    content = @Content(schema = @Schema(implementation = ErroResponseDTO.class))),
+            @ApiResponse(responseCode = "401", description = "sem login ou com email/senha errados",
+                    content = @Content(schema = @Schema(implementation = ErroResponseDTO.class))),
+            @ApiResponse(responseCode = "403", description = "o usuarioId e de outro usuario",
+                    content = @Content(schema = @Schema(implementation = ErroResponseDTO.class))),
+            @ApiResponse(responseCode = "503", description = "ms1 fora do ar (nao da para conferir o login)",
+                    content = @Content(schema = @Schema(implementation = ErroResponseDTO.class)))
+    })
     @GetMapping("/daily")
     public ResponseEntity<DespesasPorDiaResponseDTO> porDia(
+            @Parameter(description = "opcional; se vier, tem que ser o id do usuario logado", example = "1")
             @RequestParam(required = false) @Positive(message = ID_POSITIVO) Long usuarioId,
+            @Parameter(description = "data inicial (aaaa-mm-dd); sem ela, comeca no dia 1 do mes do fim "
+                    + "(ou do mes atual)", example = "2026-11-01")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
+            @Parameter(description = "data final (aaaa-mm-dd), o dia inteiro entra; sem ela, vai ate o fim "
+                    + "do mes atual", example = "2026-11-30")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim) {
         Long dono = usuarioLogado.resolverUsuario(usuarioId);
         return ResponseEntity.ok(analiseDespesasWebMapper.paraDiaResponse(
@@ -65,10 +114,28 @@ public class AnaliseDespesasController {
     }
 
     // total gasto em cada mes do periodo (so os meses com despesa)
+    @Operation(summary = "Despesas por mes",
+            description = "Total gasto em cada mes do periodo (so os meses com despesa). Sem datas, usa o mes atual.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "resumo das despesas do periodo"),
+            @ApiResponse(responseCode = "400", description = "data em formato errado ou inicio depois do fim",
+                    content = @Content(schema = @Schema(implementation = ErroResponseDTO.class))),
+            @ApiResponse(responseCode = "401", description = "sem login ou com email/senha errados",
+                    content = @Content(schema = @Schema(implementation = ErroResponseDTO.class))),
+            @ApiResponse(responseCode = "403", description = "o usuarioId e de outro usuario",
+                    content = @Content(schema = @Schema(implementation = ErroResponseDTO.class))),
+            @ApiResponse(responseCode = "503", description = "ms1 fora do ar (nao da para conferir o login)",
+                    content = @Content(schema = @Schema(implementation = ErroResponseDTO.class)))
+    })
     @GetMapping("/monthly")
     public ResponseEntity<DespesasPorMesResponseDTO> porMes(
+            @Parameter(description = "opcional; se vier, tem que ser o id do usuario logado", example = "1")
             @RequestParam(required = false) @Positive(message = ID_POSITIVO) Long usuarioId,
+            @Parameter(description = "data inicial (aaaa-mm-dd); sem ela, comeca no dia 1 do mes do fim "
+                    + "(ou do mes atual)", example = "2026-11-01")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
+            @Parameter(description = "data final (aaaa-mm-dd), o dia inteiro entra; sem ela, vai ate o fim "
+                    + "do mes atual", example = "2026-11-30")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim) {
         Long dono = usuarioLogado.resolverUsuario(usuarioId);
         return ResponseEntity.ok(analiseDespesasWebMapper.paraMesResponse(

@@ -1,6 +1,7 @@
 package br.com.gabrieloliveira.usuarios.adapter.in.web.dto;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
@@ -9,11 +10,16 @@ import java.util.List;
 // importados + rejeitados = totalLinhas
 // falhas = cada linha rejeitada, com o numero da linha no arquivo e o motivo
 @JsonPropertyOrder({"totalLinhas", "importados", "rejeitados", "falhas"})
+@Schema(description = "resumo da importacao do csv")
 public class ImportacaoResultadoDTO {
 
+    @Schema(description = "linhas de usuario lidas (sem o cabecalho e sem linhas em branco)", example = "20")
     private int totalLinhas;
+    @Schema(description = "usuarios cadastrados", example = "18")
     private int importados;
+    @Schema(description = "linhas que nao entraram", example = "2")
     private int rejeitados;
+    @Schema(description = "cada linha rejeitada, com o motivo")
     private List<FalhaImportacaoDTO> falhas;
 
     public ImportacaoResultadoDTO() {

@@ -1,14 +1,20 @@
 package br.com.gabrieloliveira.transacoes.adapter.in.web.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 // valor da transacao convertido para uma moeda estrangeira, com a taxa usada e a data dela
+@Schema(description = "valor da transacao em outra moeda")
 public class ConversaoMoedaDTO {
 
+    @Schema(description = "codigo da moeda", example = "USD")
     private String moeda;
+    @Schema(description = "quantos reais vale 1 unidade da moeda", example = "5.4321")
     private BigDecimal taxa;
+    @Schema(description = "dia da cotacao usada (no fim de semana e feriado, o ultimo dia util)", example = "2026-11-05")
     private LocalDate dataTaxa;
+    @Schema(description = "valor da transacao nessa moeda, com 2 casas", example = "27.75")
     private BigDecimal valorConvertido;
 
     public ConversaoMoedaDTO() {
