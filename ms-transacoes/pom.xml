@@ -97,6 +97,30 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<!-- jacoco: mede quanto do codigo os testes realmente executam (cobertura) -->
+			<!-- prepare-agent liga um "espiao" na jvm dos testes, que anota cada linha executada -->
+			<!-- report transforma essas anotacoes no relatorio target/site/jacoco/index.html -->
+			<!-- para gerar: mvnw.cmd clean verify -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.14</version>
+				<executions>
+					<execution>
+						<id>preparar-agente</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>gerar-relatorio</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
