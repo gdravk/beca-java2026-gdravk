@@ -15,12 +15,14 @@ mvnw.cmd clean verify
 
 O relatório fica em `target/site/jacoco/index.html` (abra no navegador).
 
+O build também confere a cobertura: se o domínio ou os casos de uso ficarem com menos de 80% das linhas testadas, o `verify` falha e mostra qual pacote ficou abaixo.
+
 Cobertura de linhas alcançada:
 
 | Microsserviço | Domínio | Casos de uso | Total | Testes |
 |---|---|---|---|---|
 | ms-usuarios | 87,0% | 100% | 66,6% | 83 |
-| ms-transacoes | 91,4% | 99,3% | 61,7% | 118 |
+| ms-transacoes | 92,2% | 100% | 62,0% | 124 |
 
 A tabela acima conta linhas. Os relatórios abaixo mostram também instruções (coluna "Cov." da esquerda) e ramos (`if`/`else`, coluna "Cov." da direita); por isso os totais aparecem um pouco diferentes.
 

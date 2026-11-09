@@ -114,6 +114,34 @@
 							<goal>report</goal>
 						</goals>
 					</execution>
+					<!-- check: o build falha se o dominio ou os casos de uso ficarem com menos de 80% das linhas testadas -->
+					<!-- assim uma regra nova sem teste e percebida na hora, e nao so na apresentacao -->
+					<execution>
+						<id>conferir-cobertura</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<rule>
+									<!-- PACKAGE = a regra vale para cada pacote separado -->
+									<element>PACKAGE</element>
+									<includes>
+										<include>*.domain.*</include>
+										<include>*.application.usecase</include>
+									</includes>
+									<limits>
+										<limit>
+											<counter>LINE</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>0.80</minimum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 		</plugins>

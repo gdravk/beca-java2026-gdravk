@@ -83,7 +83,25 @@ class EstornarTransacaoServiceTest {
         rejeitada.rejeitar("saldo insuficiente");
         when(transacaoRepositoryPort.buscarPorId(10L)).thenReturn(Optional.of(rejeitada));
 
-        assertThrows(RegraNegocioException.class, () -> service.estornar(10L, DONO));
+        // confere a mensagem tambem: as tres regras lancam a mesma excecao,
+        // e sem a mensagem o teste passaria mesmo se fosse outra regra barrando
+        RegraNegocioException erro = assertThrows(RegraNegocioException.class, () -> service.estornar(10L, DONO));
+        assertEquals("so transacoes aprovadas podem ser estornadas", erro.getMessage());
+        verify(criarTransacaoUseCase, never()).criar(any());
+    }
+
+    @Test
+    void umEstornoNaoPodeSerEstornado() {
+        // dado: a transacao 10 e ela mesma um estorno (aponta para a transacao original 5)
+        Transacao estorno = compraAprovada();
+        estorno.setTipo(TipoTransacao.DEPOSITO);
+        estorno.setTransacaoOriginalId(5L);
+        when(transacaoRepositoryPort.buscarPorId(10L)).thenReturn(Optional.of(estorno));
+
+        // quando / entao
+        RegraNegocioException erro = assertThrows(RegraNegocioException.class, () -> service.estornar(10L, DONO));
+        assertEquals("um estorno nao pode ser estornado; registre uma nova transacao", erro.getMessage());
+        verify(criarTransacaoUseCase, never()).criar(any());
     }
 
     @Test
