@@ -8,11 +8,10 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 // o que o cliente manda no corpo (json) do PUT /users/{id}
-// e quase igual ao UsuarioRequestDTO (do cadastro), com uma diferenca importante: aqui a senha e OPCIONAL
+// e quase igual ao dto do cadastro, com uma diferenca importante: aqui a senha e OPCIONAL
 // - se o json trouxer a senha, ela e trocada (e criptografada de novo)
 // - se nao trouxer, a senha atual continua a mesma
-// assim da pra mudar so o nome, por exemplo, sem precisar mandar a senha junto
-// foi um pedido do professor na revisao de 03/11
+// assim da para mudar so o nome, por exemplo, sem mandar a senha junto (pedido do professor na revisao de 03/11)
 @Schema(description = "dados para atualizar a propria conta; a senha e opcional")
 public class UsuarioUpdateRequestDTO {
 
@@ -27,21 +26,21 @@ public class UsuarioUpdateRequestDTO {
     @Schema(description = "email (vira o login)", example = "ana.souza@email.com")
     private String email;
 
-    // \\d{11} quer dizer: exatamente 11 digitos, nada de ponto ou traco
+    // \\d{11} quer dizer: exatamente 11 digitos, sem ponto e sem traco
     @NotBlank(message = "o cpf e obrigatorio")
     @Pattern(regexp = "\\d{11}", message = "o cpf deve ter exatamente 11 numeros, sem ponto e sem traco")
     @Schema(description = "exatamente 11 numeros, sem ponto e sem traco", example = "12345678901")
     private String cpf;
 
-    // repara que aqui NAO tem @NotBlank: por isso a senha pode faltar no json
-    // o @Size so e checado quando a senha vem preenchida (para valor null ele nao faz nada)
-    // entao: senha ausente = ok (mantem a atual) / senha "123" = erro 400 / senha "nova123" = troca
+    // repara que aqui NAO tem @NotBlank, por isso a senha pode faltar no json
+    // o @Size e o @SenhaCabeNoBcrypt so conferem quando a senha vem preenchida (com null eles nao fazem nada)
+    // resumindo: senha ausente = mantem a atual / senha "123" = erro 400 / senha "nova123" = troca
     @Size(min = 6, message = "a senha deve ter pelo menos 6 caracteres")
     @SenhaCabeNoBcrypt
     @Schema(description = "opcional: sem ela, a senha atual e mantida; se vier, de 6 caracteres ate 72 bytes", example = "NovaSenha@456", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String senha;
 
-    // construtor vazio pro jackson conseguir criar o objeto a partir do json
+    // construtor vazio para o jackson conseguir criar o objeto a partir do json
     public UsuarioUpdateRequestDTO() {
     }
 
@@ -58,7 +57,7 @@ public class UsuarioUpdateRequestDTO {
     }
 
     // mesmo motivo do UsuarioRequestDTO: tira os espacos antes do @Email validar
-    // o resto da normalizacao (deixar em minusculo) fica no Usuario do dominio
+    // (deixar em minusculo continua sendo trabalho do Usuario do dominio)
     public void setEmail(String email) {
         if (email == null) {
             this.email = null;

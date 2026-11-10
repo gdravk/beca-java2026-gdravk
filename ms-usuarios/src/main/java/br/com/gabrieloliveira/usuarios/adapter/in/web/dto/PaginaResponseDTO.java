@@ -3,7 +3,7 @@ package br.com.gabrieloliveira.usuarios.adapter.in.web.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
-// o formato do json da listagem paginada, por exemplo:
+// como fica o json da listagem paginada:
 // { "conteudo": [ ...usuarios... ], "pagina": 0, "tamanho": 10, "totalElementos": 25, "totalPaginas": 3 }
 @Schema(description = "uma pagina da listagem")
 public class PaginaResponseDTO<T> {

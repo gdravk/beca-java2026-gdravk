@@ -43,9 +43,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// testes web da validacao das entradas do ms1 (fase 13)
-// conferem que cada dado errado responde 400 com a mensagem clara de cada campo em "campos"
-// e, o mais importante, que o caso de uso nem chega a ser chamado quando a entrada e invalida
+// testes web da validacao das entradas do ms1
+// eles conferem que cada dado errado responde 400 com uma mensagem clara para cada campo em "campos" e,
+// o mais importante, que o caso de uso nem chega a ser chamado quando a entrada e invalida
 // a montagem e a mesma do SegurancaWebTest: so a camada web, com os casos de uso trocados por mocks
 @WebMvcTest(controllers = {UsuarioController.class, AuthController.class, ImportacaoUsuariosController.class})
 @Import({SecurityConfig.class, ErroDeSegurancaHandler.class, UsuarioWebMapper.class, VerificadorDeChaveInterna.class})
@@ -107,7 +107,7 @@ class ValidacaoWebTest {
 
     @Test
     void campoComDoisErrosMostraAsDuasMensagens() throws Exception {
-        // cpf vazio quebra duas regras ao mesmo tempo: @NotBlank e @Pattern
+        // um cpf vazio quebra duas regras ao mesmo tempo: @NotBlank e @Pattern
         String corpo = "{\"nome\":\"Ana\",\"email\":\"ana@email.com\",\"cpf\":\"\",\"senha\":\"Senha@123\"}";
 
         mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON).content(corpo))
@@ -147,7 +147,7 @@ class ValidacaoWebTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.mensagem").value("a rota /usuarios nao existe"))
                 .andExpect(jsonPath("$.trace").doesNotExist())
-                // confere o texto do json: o jsonPath doesNotExist tambem passaria com "campos": null
+                // confere o texto do json, porque o jsonPath doesNotExist tambem passaria com um "campos": null
                 .andExpect(content().string(not(containsString("\"campos\""))));
     }
 
@@ -163,8 +163,8 @@ class ValidacaoWebTest {
         logarComoAna();
         String corpo = "{\"nome\":\"Ana Souza\",\"email\":\"sem-arroba\",\"cpf\":\"12345678901\"}";
 
-        // esse metodo tem o id validado e o corpo com @Valid: o erro do corpo chega pelo outro handler,
-        // mas a resposta tem que ser a mesma
+        // este metodo tem o id validado e o corpo com @Valid: o erro do corpo chega por outro handler,
+        // mas a resposta precisa ser a mesma
         mockMvc.perform(put("/users/" + ID_DA_ANA).with(httpBasic(EMAIL, SENHA))
                         .contentType(MediaType.APPLICATION_JSON).content(corpo))
                 .andExpect(status().isBadRequest())
@@ -254,7 +254,7 @@ class ValidacaoWebTest {
 
     @Test
     void cadastroComSenhaDeLetrasComAcentoAcimaDe72BytesResponde400() throws Exception {
-        // 37 letras "c com cedilha" = 74 bytes: passaria num @Size(max = 72), mas quebraria o bcrypt
+        // 37 letras "c com cedilha" = 74 bytes: passariam num @Size(max = 72), mas quebrariam o bcrypt
         String senha = "ç".repeat(37);
         String corpo = "{\"nome\":\"Ana Souza\",\"email\":\"ana@email.com\",\"cpf\":\"12345678901\",\"senha\":\""
                 + senha + "\"}";
@@ -268,8 +268,8 @@ class ValidacaoWebTest {
 
     @Test
     void corpoEnviadoComoListaRespondeMalFormatado() throws Exception {
-        // mandaram [ {...} ] no lugar de { ... }: o jackson nao chega a nenhum campo,
-        // entao a resposta e a de corpo mal formatado (sem "campos")
+        // mandaram [ {...} ] no lugar de { ... }: o jackson nao chega em nenhum campo, entao a resposta e a de
+        // corpo mal formatado (sem "campos")
         mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON).content("[{\"nome\":\"Ana\"}]"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.mensagem").value("o corpo da requisicao esta mal formatado"))

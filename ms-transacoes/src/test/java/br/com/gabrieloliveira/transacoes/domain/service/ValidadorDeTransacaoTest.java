@@ -12,12 +12,12 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// testes das regras que aprovam ou rejeitam uma transacao (fase 14 do guia)
+// testes das regras que aprovam ou rejeitam uma transacao
 // o validador e java puro, entao nao precisa de mockito nem de spring: e so criar e chamar
 // cada teste segue o padrao "dado / quando / entao":
-//   dado   -> monta a transacao e a conta
-//   quando -> chama o metodo do validador
-//   entao  -> confere o resultado (Optional vazio = passou na regra, Optional com texto = motivo da rejeicao)
+// - dado: monta a transacao e a conta
+// - quando: chama o metodo do validador
+// - entao: confere o resultado (Optional vazio = passou na regra; Optional com texto = o motivo da rejeicao)
 class ValidadorDeTransacaoTest {
 
     private static final Long ANA = 1L;
@@ -112,7 +112,7 @@ class ValidadorDeTransacaoTest {
     }
 
     // ---------- regras de saldo e limites (so para saidas) ----------
-    // conta padrao dos testes: saldo 1000, limite diario 800, limite por transacao 500
+    // conta padrao dos testes: saldo 1000, limite diario 800 e limite por transacao 500
 
     @Test
     void retiradaDentroDoSaldoEDosLimitesEAprovada() {
@@ -167,7 +167,7 @@ class ValidadorDeTransacaoTest {
 
     @Test
     void chegarExatamenteNoLimiteDiarioEAprovado() {
-        // 700 + 100 = 800: bate o limite, mas nao passa
+        // 700 + 100 = 800: chega no limite, mas nao passa
         Transacao retirada = transacao(TipoTransacao.RETIRADA, "100.00");
 
         Optional<String> erro = validador.validarSaldoELimites(retirada, conta(), new BigDecimal("700.00"));

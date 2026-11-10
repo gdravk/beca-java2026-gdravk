@@ -39,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// testes web do download do relatorio csv (pedido 7)
+// testes web do download do relatorio em csv (pedido 7)
 @WebMvcTest(controllers = RelatorioController.class)
 @Import({SecurityConfig.class, ErroDeSegurancaHandler.class, UsuarioLogado.class, GeradorCsvRelatorio.class})
 class RelatorioWebTest {
@@ -67,7 +67,7 @@ class RelatorioWebTest {
         MvcResult resultado = mockMvc.perform(get("/transactions/report").with(httpBasic(EMAIL, SENHA))
                         .param("inicio", "2026-11-01").param("fim", "2026-11-30"))
                 .andExpect(status().isOk())
-                // attachment = o navegador baixa o arquivo, com esse nome
+                // attachment = o navegador baixa o arquivo, com este nome
                 .andExpect(header().string("Content-Disposition",
                         "attachment; filename=\"relatorio-transacoes.csv\""))
                 .andExpect(header().string("Content-Type", "text/csv;charset=UTF-8"))
@@ -95,7 +95,7 @@ class RelatorioWebTest {
         mockMvc.perform(get("/transactions/report").with(httpBasic(EMAIL, SENHA)).param("usuarioId", "99"))
                 .andExpect(status().isForbidden());
 
-        // o arquivo so traz transacoes do usuario logado: o caso de uso nem e chamado
+        // o arquivo so traz transacoes de quem esta logado: aqui o caso de uso nem e chamado
         verify(gerarRelatorioUseCase, never()).gerar(anyLong(), any(), any());
     }
 
@@ -106,9 +106,19 @@ class RelatorioWebTest {
     }
 
     @Test
+    void semLoginComOClientePedindoCsvO401SaiEmJson() throws Exception {
+        // o 401 e montado num metodo separado do handler, e ele tambem precisa sair em json mesmo quando
+        // o cliente pede "Accept: text/csv" (senao a resposta sairia sem corpo)
+        mockMvc.perform(get("/transactions/report").header("Accept", "text/csv"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith("application/json"))
+                .andExpect(jsonPath("$.mensagem", startsWith("faca login")));
+    }
+
+    @Test
     void erroComOClientePedindoCsvContinuaSaindoEmJson() throws Exception {
-        // o swagger e o navegador pedem "Accept: text/csv" nessa rota
-        // o erro (data em formato errado) tem que chegar como o nosso json de erro, e nao como um 406 vazio
+        // o swagger e o navegador pedem "Accept: text/csv" nesta rota, e mesmo assim o erro (data em formato
+        // errado) tem que chegar como o nosso json de erro, e nao como um 406 vazio
         logarComoAna();
 
         mockMvc.perform(get("/transactions/report").with(httpBasic(EMAIL, SENHA))

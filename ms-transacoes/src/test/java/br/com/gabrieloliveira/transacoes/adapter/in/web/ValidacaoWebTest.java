@@ -39,10 +39,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// testes web da validacao das entradas do ms2 (fase 13)
-// conferem que cada entrada errada responde 400 com uma mensagem clara, e que o caso de uso nem e chamado
-// lembrando a diferenca: aqui e erro de FORMATO (400); regra de negocio (saldo, limite, categoria da compra)
-// nao e erro 400, vira transacao REJECTED com o motivo (isso e testado no dominio)
+// testes web da validacao das entradas do ms2
+// eles conferem que cada entrada errada responde 400 com uma mensagem clara, e que o caso de uso nem e chamado
+// lembrando a diferenca: aqui e erro de FORMATO (400); uma regra de negocio (saldo, limite, categoria da
+// compra) nao e erro 400, e sim uma transacao REJECTED com o motivo (isso e testado no dominio)
 @WebMvcTest(controllers = {TransacaoController.class, AnaliseDespesasController.class, ContaController.class})
 @Import({SecurityConfig.class, ErroDeSegurancaHandler.class, UsuarioLogado.class, TransacaoWebMapper.class,
         AnaliseDespesasWebMapper.class, ValidacaoWebTest.RelogioDoTeste.class})
@@ -52,7 +52,7 @@ class ValidacaoWebTest {
     private static final String SENHA = "Senha@123";
     private static final Long ID_DA_ANA = 7L;
 
-    // o ContaController precisa de um relogio; no teste entregamos um no fuso de brasilia
+    // o ContaController precisa de um relogio, entao no teste entregamos um no fuso de brasilia
     @TestConfiguration
     static class RelogioDoTeste {
         @Bean
@@ -112,7 +112,7 @@ class ValidacaoWebTest {
     void valorComDoisErrosMostraAsDuasMensagensSempreNaMesmaOrdem() throws Exception {
         logarComoAna();
 
-        // negativo E com 3 casas: antes so uma das mensagens aparecia, e cada vez podia ser uma diferente
+        // negativo E com 3 casas: antes so uma das mensagens aparecia, e a cada vez podia ser uma diferente
         mockMvc.perform(post("/transactions").with(httpBasic(EMAIL, SENHA))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"tipo\":\"DEPOSITO\",\"valor\":-1.555,\"descricao\":\"salario\"}"))
@@ -153,7 +153,7 @@ class ValidacaoWebTest {
         mockMvc.perform(get("/transacoes").with(httpBasic(EMAIL, SENHA)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.mensagem").value("a rota /transacoes nao existe"))
-                // confere o texto do json: o jsonPath doesNotExist tambem passaria com "campos": null
+                // confere o texto do json, porque o jsonPath doesNotExist tambem passaria com um "campos": null
                 .andExpect(content().string(not(containsString("\"campos\""))));
     }
 

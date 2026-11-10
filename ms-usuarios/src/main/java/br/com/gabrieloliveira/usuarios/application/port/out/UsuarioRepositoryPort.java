@@ -6,18 +6,17 @@ import br.com.gabrieloliveira.usuarios.domain.model.Usuario;
 import java.util.Optional;
 
 // porta de saida: o que o centro do sistema PRECISA do banco, sem saber qual banco e
-// quem implementa e o UsuarioPersistenceAdapter (com jpa e postgres)
-// os casos de uso so enxergam essa interface
+// quem implementa e o UsuarioPersistenceAdapter (com jpa e postgres); os casos de uso so enxergam esta interface
 public interface UsuarioRepositoryPort {
 
-    // serve pra criar (id null) e pra atualizar (id preenchido)
+    // serve tanto para criar (id null) quanto para atualizar (id preenchido)
     Usuario salvar(Usuario usuario);
 
-    // Optional e uma "caixinha" que pode vir vazia, quando o usuario nao existe
+    // o Optional e uma "caixinha" que pode vir vazia, quando o usuario nao existe
     Optional<Usuario> buscarPorId(Long id);
 
-    // usado na seguranca: o login e feito pelo email
-    // o email ja deve chegar normalizado (sem espacos e em minusculo), igual ele e guardado no banco
+    // usado no login, que e feito pelo email
+    // o email ja precisa chegar normalizado (sem espacos e em minusculo), do mesmo jeito que e guardado no banco
     Optional<Usuario> buscarPorEmail(String email);
 
     Pagina<Usuario> listar(int numeroPagina, int tamanhoPagina);
@@ -28,7 +27,7 @@ public interface UsuarioRepositoryPort {
 
     boolean existePorCpf(String cpf);
 
-    // usados no update: "existe OUTRO usuario (com id diferente desse) usando esse email/cpf?"
+    // usados na atualizacao: "existe OUTRO usuario (com id diferente deste) usando esse email ou cpf?"
     boolean existePorEmailEmOutroUsuario(String email, Long idDoUsuario);
 
     boolean existePorCpfEmOutroUsuario(String cpf, Long idDoUsuario);

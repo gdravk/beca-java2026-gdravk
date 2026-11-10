@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-// o SaldoContaPort e de mentira (mock): nenhum teste chama a api mock de verdade
+// o SaldoContaPort e de mentira (um mock): nenhum teste chama a api mock de verdade
 @ExtendWith(MockitoExtension.class)
 class ConsultarSaldoServiceTest {
 

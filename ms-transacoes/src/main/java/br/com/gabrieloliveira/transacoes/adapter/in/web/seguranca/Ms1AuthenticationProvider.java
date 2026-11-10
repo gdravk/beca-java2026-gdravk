@@ -13,15 +13,15 @@ import java.util.List;
 
 // a "ponte" entre o spring security e o caso de uso de autenticar (que pergunta ao ms1)
 //
-// a cada requisicao a uma rota protegida:
+// a cada requisicao para uma rota protegida:
 // 1. o filtro da autenticacao basica le o cabecalho "Authorization: Basic ..." (email:senha em base64)
-// 2. chama o authenticate abaixo, que chama o AutenticarUsuarioUseCase
-// 3. login certo: guarda o UsuarioAutenticado (com o id do usuario) e a requisicao segue pro controller
-// 4. login errado: BadCredentialsException -> 401
-// 5. ms1 fora do ar: AuthenticationServiceException -> 503 (ver GlobalExceptionHandler)
+// 2. ele chama o authenticate abaixo, que chama o AutenticarUsuarioUseCase
+// 3. login certo: guarda o UsuarioAutenticado (com o id do usuario) e a requisicao segue para o controller
+// 4. login errado: BadCredentialsException, que vira 401
+// 5. ms1 fora do ar: AuthenticationServiceException, que vira 503 (ver GlobalExceptionHandler)
 //
-// nao tem @Component de proposito (ajuste da revisao do professor): quem cria essa classe com new
-// e o SecurityConfig; como bean, o spring registrava o provider duas vezes e, com a senha errada,
+// nao tem @Component de proposito (ajuste da revisao do professor): quem cria esta classe com new e o
+// SecurityConfig. como bean, o spring registrava o provider duas vezes e, com a senha errada,
 // perguntava ao ms1 duas vezes na mesma requisicao
 public class Ms1AuthenticationProvider implements AuthenticationProvider {
 
@@ -47,7 +47,7 @@ public class Ms1AuthenticationProvider implements AuthenticationProvider {
         } catch (CredenciaisInvalidasException e) {
             throw new BadCredentialsException(e.getMessage());
         } catch (ServicoExternoIndisponivelException e) {
-            // e diferente de senha errada: o problema e nosso (ms1 fora), nao do usuario
+            // e diferente de senha errada: aqui o problema e nosso (o ms1 esta fora do ar), e nao do usuario
             throw new AuthenticationServiceException("servico de usuarios indisponivel", e);
         }
     }

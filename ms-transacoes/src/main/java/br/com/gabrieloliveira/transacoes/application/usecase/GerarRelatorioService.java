@@ -12,17 +12,17 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-// fluxo do relatorio:
+// o caminho do relatorio:
 // 1. resolve o periodo (sem datas = mes atual; inicio depois do fim = 400), igual a analise de despesas
 // 2. busca todas as transacoes do usuario no periodo (aprovadas e rejeitadas, de todos os tipos)
-// 3. completa as cotacoes de dolar e euro que faltarem, pra o arquivo trazer o valor convertido
-// 4. ordena da mais antiga para a mais nova (numa planilha, o natural e ler de cima pra baixo no tempo)
+// 3. completa as cotacoes de dolar e euro que faltarem, para o arquivo trazer o valor convertido
+// 4. ordena da mais antiga para a mais nova (numa planilha, o natural e ler o tempo de cima para baixo)
 // 5. monta o relatorio com o resumo
 public class GerarRelatorioService implements GerarRelatorioUseCase {
 
     private final TransacaoRepositoryPort transacaoRepositoryPort;
     private final PreenchedorDeCotacoes preenchedorDeCotacoes;
-    // relogio no fuso de brasilia: decide qual e o "mes atual" quando nao vem data
+    // relogio no fuso de brasilia: e ele que decide qual e o "mes atual" quando nao vem data
     private final Clock relogio;
 
     public GerarRelatorioService(TransacaoRepositoryPort transacaoRepositoryPort,
@@ -43,7 +43,7 @@ public class GerarRelatorioService implements GerarRelatorioUseCase {
 
         preenchedorDeCotacoes.preencherFaltantes(transacoes);
 
-        // o banco devolve da mais nova pra mais antiga; aqui invertemos
+        // o banco devolve da mais nova para a mais antiga, entao aqui invertemos
         // o id desempata duas transacoes com a mesma data e hora
         transacoes.sort(Comparator.comparing(Transacao::getDataHora).thenComparing(Transacao::getId));
 

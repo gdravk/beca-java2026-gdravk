@@ -14,41 +14,41 @@ import java.time.Duration;
 import java.util.Optional;
 
 // adaptador de saida que confere o login perguntando ao ms1 (POST /auth/verificar)
-// e aqui que os dois microsservicos "conversam": o ms2 nao sabe as senhas, quem sabe e o ms1
+// e aqui que os dois microsservicos "conversam": o ms2 nao conhece as senhas, quem conhece e o ms1
 //
 // a url do ms1 vem da variavel MS1_URL:
 // - rodando no intellij: http://localhost:8081
 // - no docker compose (pedido 9): http://ms-usuarios:8081 (o nome do container)
 //
-// cuidado com a senha: ela vai so no corpo da requisicao pro ms1, nunca na url e nunca no log
+// cuidado com a senha: ela vai so no corpo da requisicao para o ms1, nunca na url e nunca no log
 @Component
 public class Ms1AutenticacaoAdapter implements AutenticacaoPort {
 
     // nome do cabecalho onde vai a chave interna (o mesmo que o ms1 espera)
     private static final String CABECALHO_CHAVE_INTERNA = "X-Chave-Interna";
 
-    // o valor de exemplo que esta no .env.example (que vai pro github): se ninguem trocou, a chave nao e segredo
-    // (sugestao da revisao do professor 06/11; o ms1 faz a mesma conferencia)
+    // o valor de exemplo do .env.example, que esta no github: se ninguem trocou, a chave nao e segredo
+    // (sugestao do professor na revisao de 06/11; o ms1 faz a mesma conferencia)
     static final String CHAVE_DE_EXEMPLO = "troque_por_uma_chave_aleatoria";
 
     private final RestClient restClient;
 
     // segredo compartilhado com o ms1 (variavel MS1_CHAVE_INTERNA do .env)
-    // sem ele o ms1 recusa o POST /auth/verificar com 403 (ajuste da revisao do professor:
-    // a rota deixou de ser aberta pra qualquer um testar senhas)
+    // sem ele, o ms1 recusa o POST /auth/verificar com 403 (ajuste da revisao do professor: a rota deixou
+    // de ser aberta para qualquer um adivinhar senhas)
     private final String chaveInterna;
 
     public Ms1AutenticacaoAdapter(@Value("${ms1.base-url}") String baseUrl,
                                   @Value("${ms1.timeout-ms}") int timeoutMs,
                                   @Value("${ms1.chave-interna}") String chaveInterna) {
-        // a aplicacao nem sobe com a chave vazia ou com a de exemplo: melhor descobrir o erro de configuracao ja
+        // a aplicacao nem sobe com a chave vazia ou com a de exemplo: e melhor descobrir o erro de configuracao logo
         if (chaveInterna == null || chaveInterna.isBlank() || chaveInterna.equals(CHAVE_DE_EXEMPLO)) {
             throw new IllegalStateException("a variavel MS1_CHAVE_INTERNA esta vazia ou com o valor de exemplo do "
                     + ".env.example; use a mesma chave aleatoria configurada no ms1");
         }
         this.chaveInterna = chaveInterna;
-        // mesmos tempos maximos de espera usados na api mock: sem eles, com o ms1 travado,
-        // toda requisicao do ms2 ficaria pendurada esperando
+        // os mesmos tempos maximos de espera usados na api mock: sem eles, com o ms1 travado, toda requisicao
+        // do ms2 ficaria pendurada esperando
         SimpleClientHttpRequestFactory fabrica = new SimpleClientHttpRequestFactory();
         fabrica.setConnectTimeout(Duration.ofMillis(timeoutMs));
         fabrica.setReadTimeout(Duration.ofMillis(timeoutMs));
@@ -71,14 +71,14 @@ public class Ms1AutenticacaoAdapter implements AutenticacaoPort {
                     .retrieve()
                     .body(UsuarioVerificadoMs1DTO.class);
         } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.BadRequest e) {
-            // 401: email ou senha errados; 400: veio campo vazio
-            // nos dois casos o ms1 funcionou, so o login que nao vale
+            // 401: email ou senha errados; 400: veio campo vazio (ou uma senha acima de 72 bytes)
+            // nos dois casos o ms1 funcionou: so o login que nao vale
             return Optional.empty();
         } catch (RestClientException e) {
-            // ms1 fora do ar, demorou demais ou respondeu um erro inesperado (500...)
-            // o 403 tambem cai aqui: quer dizer que a chave interna dos dois servicos nao bate,
-            // um erro de configuracao nosso, e nao do usuario (por isso vira 503 e nao 401)
-            // nao da pra saber quem e o usuario, entao ninguem entra (nunca libera "as cegas")
+            // ms1 fora do ar, demorando demais ou respondendo um erro inesperado (500...)
+            // o 403 tambem cai aqui: ele quer dizer que a chave interna dos dois servicos nao bate, um erro de
+            // configuracao nosso e nao do usuario (por isso vira 503, e nao 401)
+            // como nao da para saber quem e o usuario, ninguem entra (nunca liberamos "as cegas")
             throw new ServicoExternoIndisponivelException("nao foi possivel conferir o login no ms1", e);
         }
 

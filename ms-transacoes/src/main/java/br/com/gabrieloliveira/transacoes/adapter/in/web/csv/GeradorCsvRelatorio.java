@@ -15,30 +15,30 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-// transforma o relatorio em um arquivo csv que abre certinho no excel em portugues (pedido 7 do PO)
-// fica no adaptador web porque "csv" e um formato de saida da api, e nao uma regra de negocio
+// transforma o relatorio num arquivo csv que abre certinho no excel em portugues (pedido 7 do PO)
+// fica no adaptador web porque csv e um formato de saida da api, e nao uma regra de negocio
 //
 // os cuidados para o excel em portugues:
-// - BOM no comeco do arquivo: 3 bytes invisiveis que avisam "este texto e utf-8"; sem ele o excel le
-//   o arquivo em outra codificacao e cada letra com acento vira dois simbolos estranhos
-// - separador ";": o excel em portugues usa a virgula como separador decimal, entao o separador
-//   de colunas dele e o ponto e virgula
-// - numeros com virgula (150,75): com ponto o excel em portugues trata como texto, e nao da pra somar
+// - BOM no comeco do arquivo: 3 bytes invisiveis que avisam "este texto e utf-8"; sem ele o excel le o
+//   arquivo em outra codificacao e cada letra com acento vira dois simbolos estranhos
+// - separador ";": como o excel em portugues usa a virgula para separar os decimais, o separador de
+//   colunas dele e o ponto e virgula
+// - numeros com virgula (150,75): com ponto, o excel em portugues trata como texto e nao deixa somar
 // - datas no formato dd/mm/aaaa, que o excel reconhece como data
-// - quebra de linha \r\n, o padrao do csv (rfc 4180) e do windows
+// - quebra de linha \r\n, que e o padrao do csv (rfc 4180) e do windows
 @Component
 public class GeradorCsvRelatorio {
 
     private static final String SEPARADOR = ";";
     private static final String QUEBRA_DE_LINHA = "\r\n";
-    // o caractere de codigo FEFF e o BOM; escrito em utf-8 ele vira os bytes EF BB BF
-    // ele e invisivel, por isso fica escrito com o codigo (\ uFEFF, sem o espaco) e nao colado direto no texto
+    // o BOM e o caractere de codigo FEFF; escrito em utf-8, ele vira os bytes EF BB BF
+    // como ele e invisivel, fica escrito pelo codigo (\ uFEFF, sem o espaco) e nao colado direto no texto
     private static final String BOM = "\uFEFF";
     private static final DateTimeFormatter DATA_HORA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final DateTimeFormatter DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    // a primeira coluna e "Id" e nao "ID": um arquivo que comeca com as letras ID maiusculas faz o excel
-    // achar que e outro formato (SYLK) e mostrar o erro "o formato do arquivo nao e valido"
+    // a primeira coluna e "Id", e nao "ID": quando um arquivo comeca com as letras ID maiusculas, o excel
+    // acha que e outro formato (SYLK) e mostra o erro "o formato do arquivo nao e valido"
     private static final List<String> CABECALHO = List.of(
             "Id", "Data e hora", "Tipo", "Categoria", "Descrição", "Valor (R$)", "Status", "Motivo da rejeição",
             "Usuário destino", "Estorno da transação", "Cotação do dólar (R$)", "Valor em dólar (US$)",
@@ -57,7 +57,7 @@ public class GeradorCsvRelatorio {
     }
 
     // uma linha por transacao, na mesma ordem do CABECALHO
-    // o que nao se aplica fica vazio (ex: motivo da rejeicao numa transacao aprovada)
+    // o que nao se aplica fica vazio (o motivo da rejeicao numa transacao aprovada, por exemplo)
     private List<String> colunasDa(Transacao transacao) {
         List<String> colunas = new ArrayList<>();
         colunas.add(String.valueOf(transacao.getId()));
@@ -77,8 +77,8 @@ public class GeradorCsvRelatorio {
         return colunas;
     }
 
-    // resumo no fim do arquivo, separado das transacoes por uma linha em branco
-    // (no fim, e nao no comeco, pra o cabecalho continuar na primeira linha e o filtro do excel funcionar)
+    // o resumo fica no fim do arquivo, separado das transacoes por uma linha em branco
+    // (no fim, e nao no comeco, para o cabecalho continuar na primeira linha e o filtro do excel funcionar)
     private void escreverResumo(StringBuilder csv, RelatorioTransacoes relatorio) {
         csv.append(QUEBRA_DE_LINHA);
         escreverLinha(csv, List.of("Resumo"));
@@ -100,9 +100,9 @@ public class GeradorCsvRelatorio {
         csv.append(String.join(SEPARADOR, protegidas)).append(QUEBRA_DE_LINHA);
     }
 
-    // se o texto tiver ; ou aspas ou quebra de linha, ele vai entre aspas (senao quebraria as colunas)
-    // e cada aspa de dentro vira duas aspas: e assim que o csv escreve uma aspa dentro de um texto
-    // ex: compra "especial"; parcelada  ->  "compra ""especial""; parcelada"
+    // se o texto tiver ponto e virgula, aspas ou quebra de linha, ele vai entre aspas (senao quebraria as colunas),
+    // e cada aspa de dentro vira duas aspas, que e o jeito do csv de escrever uma aspa dentro de um texto:
+    // compra "especial"; parcelada  vira  "compra ""especial""; parcelada"
     private String protegerSeparadores(String valor) {
         if (valor.contains(SEPARADOR) || valor.contains("\"") || valor.contains("\n") || valor.contains("\r")) {
             return "\"" + valor.replace("\"", "\"\"") + "\"";
@@ -110,10 +110,10 @@ public class GeradorCsvRelatorio {
         return valor;
     }
 
-    // texto livre digitado pelo usuario (descricao) ou gerado pelo sistema (motivo)
-    // seguranca: se comecar com = + - @ (ou tab/enter), o excel trataria como FORMULA e executaria
-    // (ex: uma descricao "=HYPERLINK(...)" viraria um link perigoso); isso se chama "csv injection"
-    // a aspa simples na frente faz o excel mostrar o texto como texto, sem executar
+    // texto livre, digitado pelo usuario (descricao) ou gerado pelo sistema (motivo)
+    // seguranca: se o texto comecar com = + - @ (ou tab/enter), o excel trataria como FORMULA e executaria;
+    // uma descricao "=HYPERLINK(...)" viraria um link perigoso, por exemplo (isso se chama "csv injection")
+    // a aspa simples na frente faz o excel mostrar o texto como texto, sem executar nada
     private String texto(String valor) {
         if (valor == null || valor.isEmpty()) {
             return "";
@@ -126,12 +126,12 @@ public class GeradorCsvRelatorio {
         return valor;
     }
 
-    // 150.75 -> "150,75" (sempre com 2 casas)
+    // 150.75 vira "150,75" (sempre com 2 casas)
     private String dinheiro(BigDecimal valor) {
         return valor.setScale(2, RoundingMode.HALF_EVEN).toPlainString().replace('.', ',');
     }
 
-    // taxa de cambio com as casas que vieram da brasilapi (ex: 5.4321 -> "5,4321"); sem taxa, vazio
+    // taxa de cambio com as casas que vieram da brasilapi (5.4321 vira "5,4321"); sem taxa, fica vazio
     private String taxa(BigDecimal taxa) {
         if (taxa == null) {
             return "";
@@ -139,7 +139,7 @@ public class GeradorCsvRelatorio {
         return taxa.toPlainString().replace('.', ',');
     }
 
-    // mesma conta da api (Cotacao.converterDeReais), pra o arquivo e o json mostrarem o mesmo valor
+    // a mesma conta da api (Cotacao.converterDeReais), para o arquivo e o json mostrarem o mesmo valor
     private String convertido(BigDecimal valorEmReais, BigDecimal taxa) {
         if (taxa == null) {
             return "";
@@ -154,7 +154,7 @@ public class GeradorCsvRelatorio {
         return String.valueOf(numero);
     }
 
-    // nomes em portugues, com acento, pra quem le a planilha
+    // nomes em portugues e com acento, para quem le a planilha
     // o switch sem "default" obriga a tratar todos os valores do enum: se um dia entrar um tipo novo,
     // o codigo nem compila ate alguem escrever o nome dele aqui
     private String nomeDoTipo(TipoTransacao tipo) {

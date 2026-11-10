@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-// o que os casos de uso precisam do banco de transacoes; implementada por TransacaoPersistenceAdapter
+// o que os casos de uso precisam do banco de transacoes; quem implementa e o TransacaoPersistenceAdapter
 // nao existe metodo de exclusao: transacao nunca e apagada
 public interface TransacaoRepositoryPort {
 
@@ -17,18 +17,16 @@ public interface TransacaoRepositoryPort {
 
     Optional<Transacao> buscarPorId(Long id);
 
-    // periodo fechado no inicio e aberto no fim: [de, ate)
-    // tipo null = todos os tipos
+    // o periodo inclui o "de" e nao inclui o "ate" ([de, ate)); tipo null = todos os tipos
     List<Transacao> listarPorUsuario(Long usuarioId, LocalDateTime de, LocalDateTime ate, TipoTransacao tipo);
 
-    // soma das saidas aprovadas (retirada, transferencia e compra) do usuario no dia, usada no limite diario
+    // soma das saidas aprovadas (retirada, transferencia e compra) do usuario no dia; e usada no limite diario
     BigDecimal somarSaidasAprovadasNoDia(Long usuarioId, LocalDate dia);
 
     // true se a transacao ja tem um estorno aprovado
     boolean existeEstornoAprovado(Long idTransacaoOriginal);
 
-    // despesas do usuario no periodo [de, ate), usadas na analise de despesas
+    // despesas do usuario no periodo [de, ate), usadas na analise, da mais antiga para a mais nova
     // despesa = saida (retirada, transferencia, compra) aprovada, que nao e estorno e que nao foi estornada
-    // ordenadas da mais antiga pra mais nova
     List<Transacao> listarDespesas(Long usuarioId, LocalDateTime de, LocalDateTime ate);
 }

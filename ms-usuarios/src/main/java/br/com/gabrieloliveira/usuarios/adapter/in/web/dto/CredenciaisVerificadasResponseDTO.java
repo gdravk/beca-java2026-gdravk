@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 // resposta do POST /auth/verificar quando o email e a senha estao certos
-// o mais importante e o usuarioId: e com ele que o ms2 sabe de quem sao as transacoes
-// a senha (nem o hash dela) nunca vem aqui
+// o mais importante aqui e o usuarioId: e com ele que o ms2 sabe de quem sao as transacoes
+// a senha nunca vem aqui, nem o hash dela
 @JsonPropertyOrder({"usuarioId", "nome", "email"})
 @Schema(description = "usuario dono do email e da senha conferidos")
 public class CredenciaisVerificadasResponseDTO {

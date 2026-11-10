@@ -8,7 +8,7 @@ import br.com.gabrieloliveira.usuarios.domain.model.Usuario;
 // implementa o caso de uso de listar usuarios com paginacao
 public class ListarUsuariosService implements ListarUsuariosUseCase {
 
-    // limite pra ninguem pedir 1 milhao de usuarios de uma vez e travar a api
+    // limite para ninguem pedir 1 milhao de usuarios de uma vez e travar a api
     private static final int TAMANHO_MAXIMO_PAGINA = 100;
 
     private final UsuarioRepositoryPort usuarioRepositoryPort;
@@ -19,8 +19,8 @@ public class ListarUsuariosService implements ListarUsuariosUseCase {
 
     @Override
     public Pagina<Usuario> listar(int numeroPagina, int tamanhoPagina) {
-        // se mandarem valores sem sentido, a gente ajusta em vez de dar erro
-        // pagina negativa vira 0, tamanho menor que 1 vira 1, e maior que 100 vira 100
+        // se chegarem valores sem sentido, ajustamos em vez de dar erro: pagina negativa vira 0, tamanho menor
+        // que 1 vira 1 e maior que 100 vira 100 (o controller ja barra esses casos com 400; isto e uma garantia a mais)
         int paginaAjustada = Math.max(numeroPagina, 0);
         int tamanhoAjustado = Math.min(Math.max(tamanhoPagina, 1), TAMANHO_MAXIMO_PAGINA);
 

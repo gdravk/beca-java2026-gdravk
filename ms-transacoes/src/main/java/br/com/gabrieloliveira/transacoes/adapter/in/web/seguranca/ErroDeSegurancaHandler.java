@@ -10,9 +10,9 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
-// quando o spring security barra uma requisicao (sem login, login errado, ms1 fora), o erro acontece
-// num filtro, antes do controller; essa classe entrega o erro pro GlobalExceptionHandler,
-// pra resposta sair no mesmo json de erro do resto da api (igual no ms1)
+// quando o spring security barra uma requisicao (sem login, login errado, ms1 fora do ar), o erro acontece
+// num filtro, antes do controller; esta classe entrega o erro para o GlobalExceptionHandler, para a
+// resposta sair no mesmo json de erro do resto da api (igual no ms1)
 @Component
 public class ErroDeSegurancaHandler implements AuthenticationEntryPoint, AccessDeniedHandler {
 

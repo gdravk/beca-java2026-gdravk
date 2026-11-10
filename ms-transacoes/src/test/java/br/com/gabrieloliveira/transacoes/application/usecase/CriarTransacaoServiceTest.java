@@ -35,7 +35,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-// testes do fluxo de criacao de transacao (fase 14 do guia) e do fuso de brasilia (revisao do pedido 5)
+// testes do caminho de criacao de uma transacao e do fuso de brasilia
 // as portas (banco, api mock de saldo e cambio) sao de mentira (mocks do mockito): nada sai do computador
 // o relogio fica parado em 06/11/2026 01:00 em utc, que no brasil ainda e 05/11 as 22h
 @ExtendWith(MockitoExtension.class)
@@ -57,9 +57,9 @@ class CriarTransacaoServiceTest {
         Clock relogio = Clock.fixed(Instant.parse("2026-11-06T01:00:00Z"), ZoneId.of("America/Sao_Paulo"));
         service = new CriarTransacaoService(transacaoRepositoryPort, saldoContaPort,
                 new PreenchedorDeCotacoes(cambioPort), new ValidadorDeTransacao(), relogio);
-        // o salvar de mentira devolve a propria transacao recebida
+        // o salvar de mentira devolve a propria transacao que recebeu
         when(transacaoRepositoryPort.salvar(any(Transacao.class))).thenAnswer(chamada -> chamada.getArgument(0));
-        // cambio fora do ar: nao importa pra maioria dos testes (e nao pode atrapalhar a criacao)
+        // cambio fora do ar: nao importa para a maioria dos testes (e nao pode atrapalhar a criacao)
         // lenient = "tolerante": o mockito nao reclama no teste que troca esse comportamento
         lenient().when(cambioPort.buscarCotacaoAtual(anyString())).thenThrow(new ServicoExternoIndisponivelException("fora"));
     }
@@ -74,10 +74,10 @@ class CriarTransacaoServiceTest {
 
         Transacao criada = service.criar(deposito);
 
-        // dia 05 as 22h (horario de brasilia), e nao dia 06 as 01h (horario utc)
+        // dia 05 as 22h (horario de brasilia), e nao dia 06 a 01h (horario utc)
         assertEquals(LocalDateTime.of(2026, 11, 5, 22, 0), criada.getDataHora());
         assertEquals(StatusTransacao.APPROVED, criada.getStatus());
-        // deposito nao consulta saldo
+        // deposito nao consulta o saldo
         verify(saldoContaPort, never()).buscarPorUsuario(any());
     }
 
@@ -107,7 +107,7 @@ class CriarTransacaoServiceTest {
 
     @Test
     void retiradaComSaldoEAprovadaESalva() {
-        // dado: conta com saldo e limites folgados, nada gasto hoje
+        // dado: uma conta com saldo e limites folgados, e nada gasto hoje
         when(saldoContaPort.buscarPorUsuario(1L)).thenReturn(Optional.of(contaPadrao()));
         when(transacaoRepositoryPort.somarSaidasAprovadasNoDia(1L, LocalDate.of(2026, 11, 5)))
                 .thenReturn(BigDecimal.ZERO);
@@ -136,7 +136,7 @@ class CriarTransacaoServiceTest {
 
     @Test
     void limiteDiarioContaOQueJaFoiGastoNoDiaDeBrasilia() {
-        // ja gastou 700 no dia 05/11 (dia de brasilia, e nao o 06/11 do utc); limite diario 800
+        // ja gastou 700 no dia 05/11 (o dia de brasilia, e nao o 06/11 do utc), e o limite diario e 800
         when(saldoContaPort.buscarPorUsuario(1L)).thenReturn(Optional.of(contaPadrao()));
         when(transacaoRepositoryPort.somarSaidasAprovadasNoDia(1L, LocalDate.of(2026, 11, 5)))
                 .thenReturn(new BigDecimal("700.00"));
@@ -179,13 +179,13 @@ class CriarTransacaoServiceTest {
 
         assertEquals(StatusTransacao.REJECTED, criada.getStatus());
         assertEquals("nao e permitido transferir para a propria conta", criada.getMotivoRejeicao());
-        // com os dados errados nem vale a pena chamar a api mock
+        // com os dados errados, nem vale a pena chamar a api mock
         verify(saldoContaPort, never()).buscarPorUsuario(any());
     }
 
     @Test
     void cotacoesDoDolarEDoEuroSaoGuardadasNaTransacao() {
-        // dado: brasilapi respondendo (troca o "fora do ar" do setUp so neste teste)
+        // dado: a brasilapi respondendo (troca o "fora do ar" do setUp so neste teste)
         doReturn(new Cotacao("USD", new BigDecimal("5.4321"), LocalDate.of(2026, 11, 5)))
                 .when(cambioPort).buscarCotacaoAtual("USD");
         doReturn(new Cotacao("EUR", new BigDecimal("6.1234"), LocalDate.of(2026, 11, 5)))
@@ -211,7 +211,7 @@ class CriarTransacaoServiceTest {
         return transacao;
     }
 
-    // saldo 1000, limite diario 800, limite por transacao 500
+    // conta com saldo 1000, limite diario 800 e limite por transacao 500
     private SaldoConta contaPadrao() {
         return new SaldoConta(1L, new BigDecimal("1000.00"), new BigDecimal("800.00"), new BigDecimal("500.00"));
     }

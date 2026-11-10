@@ -28,7 +28,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-// o relogio fica parado em 15/11/2026 (horario de brasilia): o "mes atual" dos testes e novembro de 2026
+// o relogio fica parado em 15/11/2026 (horario de brasilia), entao o "mes atual" dos testes e novembro de 2026
 @ExtendWith(MockitoExtension.class)
 class GerarRelatorioServiceTest {
 
@@ -48,7 +48,7 @@ class GerarRelatorioServiceTest {
 
     @Test
     void semDatasOMesAtualInteiroEUsadoETodosOsTiposEntram() {
-        // dado: o repositorio recebe de 01/11 00:00 ate 01/12 00:00 (fim exclusivo) e tipo null (todos)
+        // dado: o repositorio recebe de 01/11 00:00 ate 01/12 00:00 (fim exclusivo) e tipo null (todos os tipos)
         when(transacaoRepositoryPort.listarPorUsuario(1L, LocalDateTime.of(2026, 11, 1, 0, 0),
                 LocalDateTime.of(2026, 12, 1, 0, 0), null)).thenReturn(List.of());
 

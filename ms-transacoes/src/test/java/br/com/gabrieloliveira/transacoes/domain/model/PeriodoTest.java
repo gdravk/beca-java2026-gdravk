@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-// testes de como o periodo da analise e decidido
-// "hoje" e sempre fixo (5 de novembro de 2026), pra que o resultado nao mude conforme o dia em que o teste roda
+// testes de como o periodo da analise e do relatorio e decidido
+// o "hoje" e sempre fixo (5 de novembro de 2026), para o resultado nao mudar conforme o dia em que o teste roda
 class PeriodoTest {
 
     private static final LocalDate HOJE = LocalDate.of(2026, 11, 5);

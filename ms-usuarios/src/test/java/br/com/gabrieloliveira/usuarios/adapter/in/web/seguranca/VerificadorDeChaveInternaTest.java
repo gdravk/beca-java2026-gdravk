@@ -20,7 +20,7 @@ class VerificadorDeChaveInternaTest {
 
     @Test
     void chaveDeExemploDoEnvExampleImpedeAAplicacaoDeSubir() {
-        // sugestao da revisao 06/11: a chave de exemplo esta no github, entao nao e segredo
+        // sugestao do professor na revisao de 06/11: a chave de exemplo esta no github, entao nao e segredo
         assertThrows(IllegalStateException.class,
                 () -> new VerificadorDeChaveInterna(VerificadorDeChaveInterna.CHAVE_DE_EXEMPLO));
     }

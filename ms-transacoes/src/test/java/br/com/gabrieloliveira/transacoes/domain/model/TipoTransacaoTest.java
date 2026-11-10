@@ -10,7 +10,7 @@ class TipoTransacaoTest {
 
     @Test
     void soODepositoNaoESaida() {
-        // saida = passa pela checagem de saldo e limites
+        // saida = passa pela conferencia de saldo e limites
         assertFalse(TipoTransacao.DEPOSITO.isSaida());
         assertTrue(TipoTransacao.RETIRADA.isSaida());
         assertTrue(TipoTransacao.TRANSFERENCIA.isSaida());

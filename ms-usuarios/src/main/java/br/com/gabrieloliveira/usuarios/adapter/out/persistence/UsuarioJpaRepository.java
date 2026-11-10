@@ -4,10 +4,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-// o repositorio do spring data, que fala direto com o banco
+// o repositorio do spring data, que conversa direto com o banco
 // so de estender o JpaRepository a gente ja ganha pronto: save, findById, findAll, deleteById...
-// <UsuarioEntity, Long> = a entidade que ele cuida e o tipo do id dela
-// ele nao e usado pelos casos de uso direto: quem usa ele e o UsuarioPersistenceAdapter
+// <UsuarioEntity, Long> quer dizer: a entidade que ele cuida e o tipo do id dela
+// os casos de uso nao usam ele direto; quem usa e o UsuarioPersistenceAdapter
 public interface UsuarioJpaRepository extends JpaRepository<UsuarioEntity, Long> {
 
     // o spring le o nome do metodo e monta o sql sozinho
@@ -15,12 +15,12 @@ public interface UsuarioJpaRepository extends JpaRepository<UsuarioEntity, Long>
     boolean existsByEmail(String email);
 
     // findByEmail vira: select * from usuarios where email = ?
-    // devolve Optional porque o email pode nao existir
+    // devolve Optional porque pode nao existir ninguem com esse email
     Optional<UsuarioEntity> findByEmail(String email);
 
     boolean existsByCpf(String cpf);
 
-    // "AndIdNot" = e o id e diferente do informado (ignora o proprio usuario)
+    // "AndIdNot" = e com o id diferente do informado (ou seja, ignora o proprio usuario)
     boolean existsByEmailAndIdNot(String email, Long id);
 
     boolean existsByCpfAndIdNot(String cpf, Long id);

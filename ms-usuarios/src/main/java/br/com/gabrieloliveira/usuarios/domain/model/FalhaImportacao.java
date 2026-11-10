@@ -1,7 +1,7 @@
 package br.com.gabrieloliveira.usuarios.domain.model;
 
 // uma linha do arquivo que nao entrou, com o motivo
-// ex: linha 12, "ja existe um usuario cadastrado com esse email"
+// (por exemplo: linha 12, "ja existe um usuario cadastrado com esse email")
 public class FalhaImportacao {
 
     private final int linha;

@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 // resposta do GET /accounts/{usuarioId}/balance
-// consultadoEm mostra o momento da consulta, ja que o saldo vem "ao vivo" da api mock e pode mudar
+// o consultadoEm mostra o momento da consulta, ja que o saldo vem "ao vivo" da api mock e pode mudar
 @Schema(description = "saldo e limites da conta, lidos na hora da API Mock")
 public class SaldoContaResponseDTO {
 

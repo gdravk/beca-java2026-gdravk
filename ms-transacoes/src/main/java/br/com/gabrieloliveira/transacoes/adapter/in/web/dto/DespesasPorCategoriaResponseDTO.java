@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 // resposta do GET /transactions/analysis/category
-// inicio e fim mostram o periodo que foi usado de verdade (quando o cliente nao manda, e o mes atual),
+// o inicio e o fim mostram o periodo usado de verdade (se o cliente nao mandar, e o mes atual),
 // assim quem le a resposta sabe exatamente a que periodo os totais se referem
 @JsonPropertyOrder({"usuarioId", "inicio", "fim", "quantidadeDespesas", "totalGeral", "categorias"})
 @Schema(description = "despesas do periodo agrupadas por categoria")

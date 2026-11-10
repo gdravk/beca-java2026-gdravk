@@ -1,6 +1,6 @@
 package br.com.gabrieloliveira.transacoes.domain.model;
 
-// os quatro tipos de transacao aceitos pelo produto
+// os quatro tipos de transacao que o produto aceita
 public enum TipoTransacao {
 
     DEPOSITO,
@@ -8,12 +8,12 @@ public enum TipoTransacao {
     TRANSFERENCIA,
     COMPRA;
 
-    // saida = dinheiro saindo da conta; so esses tipos passam pela checagem de saldo e limites
+    // saida = dinheiro saindo da conta; so esses tipos passam pela conferencia de saldo e limites
     public boolean isSaida() {
         return this == RETIRADA || this == TRANSFERENCIA || this == COMPRA;
     }
 
-    // tipo usado no estorno: devolve o dinheiro de uma saida, ou retira de volta um deposito
+    // o tipo usado no estorno: devolve o dinheiro de uma saida, ou tira de volta o de um deposito
     public TipoTransacao inverso() {
         if (this == DEPOSITO) {
             return RETIRADA;

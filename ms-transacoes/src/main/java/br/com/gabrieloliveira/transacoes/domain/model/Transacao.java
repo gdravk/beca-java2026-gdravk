@@ -4,10 +4,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-// transacao financeira de um usuario, em java puro
+// uma transacao financeira de um usuario, em java puro
 // o valor e sempre em reais; dolar e euro sao so conversoes, calculadas com as taxas guardadas aqui
-// uma transacao nunca e apagada nem alterada depois de gravada: a correcao e feita por estorno,
-// que e uma nova transacao apontando para a original (transacaoOriginalId)
+// uma transacao nunca e apagada nem alterada depois de gravada: a correcao e feita por estorno, que e
+// uma nova transacao apontando para a original (transacaoOriginalId)
 public class Transacao {
 
     private Long id;
@@ -16,16 +16,16 @@ public class Transacao {
     private BigDecimal valor;
     private Categoria categoria;
     private String descricao;
-    // so preenchido em transferencia
+    // so e preenchido nas transferencias
     private Long usuarioDestinoId;
     private StatusTransacao status;
-    // so preenchido quando o status e REJECTED
+    // so e preenchido quando o status e REJECTED
     private String motivoRejeicao;
     private LocalDateTime dataHora;
-    // so preenchido quando esta transacao e o estorno de outra
+    // so e preenchido quando esta transacao e o estorno de outra
     private Long transacaoOriginalId;
 
-    // taxas de cambio do momento em que a transacao foi criada
+    // as taxas de cambio do momento em que a transacao foi criada
     // ficam null quando o servico de cambio nao respondeu
     private BigDecimal taxaDolar;
     private LocalDate dataTaxaDolar;

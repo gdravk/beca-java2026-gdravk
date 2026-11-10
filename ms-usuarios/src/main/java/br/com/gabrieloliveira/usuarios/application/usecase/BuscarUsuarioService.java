@@ -16,7 +16,7 @@ public class BuscarUsuarioService implements BuscarUsuarioUseCase {
 
     @Override
     public Usuario buscarPorId(Long id) {
-        // se a "caixinha" (Optional) vier vazia, o orElseThrow lanca nossa excecao, que vira 404
+        // se a "caixinha" (Optional) vier vazia, o orElseThrow lanca a nossa excecao, que vira 404
         return usuarioRepositoryPort.buscarPorId(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("usuario com id " + id + " nao encontrado"));
     }

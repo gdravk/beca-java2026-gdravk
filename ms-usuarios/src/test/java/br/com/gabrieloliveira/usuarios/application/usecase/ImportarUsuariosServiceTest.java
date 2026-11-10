@@ -21,8 +21,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 // testes do caso de uso de importacao em massa
-// o ImportarUsuariosService depende so do CriarUsuarioUseCase, que aqui e um mock:
-// cada teste diz se o "criar" deu certo ou lancou erro, e conferimos se o resumo saiu certo
+// o ImportarUsuariosService depende so do CriarUsuarioUseCase, que aqui e um mock: cada teste diz se o
+// "criar" deu certo ou lancou erro, e conferimos se o resumo saiu certo
 @ExtendWith(MockitoExtension.class)
 class ImportarUsuariosServiceTest {
 
@@ -56,12 +56,12 @@ class ImportarUsuariosServiceTest {
 
     @Test
     void linhaInvalidaDaLeituraViraFalhaESemChamarOCadastro() {
-        // dado: so uma linha, que ja veio invalida do leitor do csv
+        // dado: uma linha so, que ja veio invalida do leitor do csv
         List<LinhaImportacao> linhas = List.of(LinhaImportacao.invalida(5, "o email esta em formato invalido"));
 
         ResultadoImportacao resultado = importarUsuariosService.importar(linhas);
 
-        // entao: virou falha com a linha e o motivo, e o cadastro nem foi chamado
+        // entao: ela virou falha, com a linha e o motivo, e o cadastro nem foi chamado
         assertEquals(1, resultado.getRejeitados());
         assertEquals(5, resultado.getFalhas().get(0).getLinha());
         assertEquals("o email esta em formato invalido", resultado.getFalhas().get(0).getMotivo());
@@ -87,7 +87,7 @@ class ImportarUsuariosServiceTest {
 
         ResultadoImportacao resultado = importarUsuariosService.importar(linhas);
 
-        // entao: a linha 3 falhou com o motivo do cadastro, e a linha 4 (depois do erro) entrou mesmo assim
+        // entao: a linha 3 falhou com o motivo do cadastro, e a linha 4 (que vem depois do erro) entrou mesmo assim
         assertEquals(3, resultado.getTotalLinhas());
         assertEquals(2, resultado.getImportados());
         assertEquals(1, resultado.getRejeitados());
@@ -104,7 +104,7 @@ class ImportarUsuariosServiceTest {
         ResultadoImportacao resultado = importarUsuariosService.importar(
                 List.of(LinhaImportacao.valida(2, usuario("ana@email.com"))));
 
-        // entao: a excecao nao escapa (a importacao nao quebra), ela vira falha da linha
+        // entao: a excecao nao escapa (a importacao nao quebra) e vira falha da linha
         assertEquals(0, resultado.getImportados());
         assertEquals(1, resultado.getRejeitados());
         assertEquals(2, resultado.getFalhas().get(0).getLinha());
@@ -112,7 +112,7 @@ class ImportarUsuariosServiceTest {
 
     @Test
     void misturaDeLinhasValidasEInvalidasMantemAOrdemDasFalhas() {
-        // dado: invalida, valida, invalida
+        // dado: uma linha invalida, uma valida e outra invalida
         List<LinhaImportacao> linhas = List.of(
                 LinhaImportacao.invalida(2, "o nome e obrigatorio"),
                 LinhaImportacao.valida(3, usuario("bruno@email.com")),

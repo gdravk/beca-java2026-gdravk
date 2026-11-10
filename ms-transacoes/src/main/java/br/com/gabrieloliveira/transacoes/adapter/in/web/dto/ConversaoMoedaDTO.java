@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-// valor da transacao convertido para uma moeda estrangeira, com a taxa usada e a data dela
+// o valor da transacao convertido para uma moeda estrangeira, com a taxa usada e a data dela
 @Schema(description = "valor da transacao em outra moeda")
 public class ConversaoMoedaDTO {
 

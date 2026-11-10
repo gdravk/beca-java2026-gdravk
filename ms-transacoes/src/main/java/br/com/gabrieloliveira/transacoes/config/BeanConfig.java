@@ -29,16 +29,15 @@ import org.springframework.context.annotation.Configuration;
 import java.time.Clock;
 import java.time.ZoneId;
 
-// monta o nucleo da aplicacao: o dominio e os casos de uso sao java puro, sem @Service,
-// entao sao criados aqui e recebem as implementacoes das portas de saida (adaptadores @Component)
-// trocar um adaptador (ex: saldo falso -> api mock real) nao muda nada nesta classe
+// monta o nucleo da aplicacao: o dominio e os casos de uso sao java puro, sem @Service, entao sao
+// criados aqui e recebem as implementacoes das portas de saida (os adaptadores @Component)
+// por isso trocar um adaptador (como foi trocar o saldo falso pela api mock real) nao muda nada nesta classe
 @Configuration
 public class BeanConfig {
 
-    // o relogio da aplicacao, sempre no fuso de brasilia
-    // sem fixar o fuso, num container em utc o "hoje" e o "agora" seriam os de londres
-    // (uma compra as 22h no brasil ja cairia no dia seguinte)
-    // fica num bean pra que os testes possam usar um relogio parado no lugar dele
+    // o relogio da aplicacao, sempre no fuso de brasilia; sem fixar o fuso, num container em utc o "hoje"
+    // e o "agora" seriam os de londres (uma compra as 22h no brasil ja cairia no dia seguinte)
+    // ele e um bean para os testes poderem usar um relogio parado no lugar dele
     @Bean
     public Clock relogio() {
         return Clock.system(ZoneId.of("America/Sao_Paulo"));
@@ -49,7 +48,7 @@ public class BeanConfig {
         return new ValidadorDeTransacao();
     }
 
-    // um preenchedor so, compartilhado pelos tres casos de uso que mostram cambio (criar, buscar e listar)
+    // um preenchedor so, compartilhado pelos casos de uso que mostram cambio (criar, buscar, listar e relatorio)
     // ele recebe a CambioPort, que hoje e implementada pelo BrasilApiCambioAdapter
     @Bean
     public PreenchedorDeCotacoes preenchedorDeCotacoes(CambioPort cambioPort) {
@@ -88,7 +87,7 @@ public class BeanConfig {
         return new AnalisadorDeDespesas();
     }
 
-    // a analise usa o relogio (bean "relogio", la em cima) pra saber qual e o "mes atual"
+    // a analise usa o relogio (o bean "relogio", la em cima) para saber qual e o "mes atual"
     @Bean
     public AnalisarDespesasUseCase analisarDespesasUseCase(TransacaoRepositoryPort transacaoRepositoryPort,
                                                            AnalisadorDeDespesas analisadorDeDespesas,
@@ -97,7 +96,7 @@ public class BeanConfig {
     }
 
     // usado pelo Ms1AuthenticationProvider a cada requisicao com login
-    // recebe a AutenticacaoPort, que hoje e implementada pelo Ms1AutenticacaoAdapter (chama o ms1)
+    // recebe a AutenticacaoPort, que hoje e implementada pelo Ms1AutenticacaoAdapter (que chama o ms1)
     @Bean
     public AutenticarUsuarioUseCase autenticarUsuarioUseCase(AutenticacaoPort autenticacaoPort) {
         return new AutenticarUsuarioService(autenticacaoPort);
@@ -109,7 +108,7 @@ public class BeanConfig {
         return new EstornarTransacaoService(transacaoRepositoryPort, criarTransacaoUseCase);
     }
 
-    // relatorio csv (pedido 7): usa o relogio pra saber qual e o "mes atual", igual a analise
+    // relatorio csv (pedido 7): usa o relogio para saber qual e o "mes atual", igual a analise
     @Bean
     public GerarRelatorioUseCase gerarRelatorioUseCase(TransacaoRepositoryPort transacaoRepositoryPort,
                                                        PreenchedorDeCotacoes preenchedorDeCotacoes,

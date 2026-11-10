@@ -10,9 +10,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// resposta de uma transacao: valor em reais + conversoes em dolar e euro
-// quando alguma cotacao nao estiver disponivel, conversaoDisponivel = false e mensagemConversao explica
-// a ordem dos campos no json e fixada aqui; sem isso o jackson 3 ordena em ordem alfabetica
+// resposta de uma transacao: o valor em reais e as conversoes em dolar e euro
+// quando alguma cotacao nao estiver disponivel, o conversaoDisponivel vem false e o mensagemConversao explica
+// a ordem dos campos no json e fixada aqui; sem isso, o jackson 3 colocaria tudo em ordem alfabetica
 @JsonPropertyOrder({"id", "usuarioId", "tipo", "valorEmReais", "categoria", "descricao", "usuarioDestinoId",
         "status", "motivoRejeicao", "dataHora", "transacaoOriginalId",
         "conversoes", "conversaoDisponivel", "mensagemConversao"})

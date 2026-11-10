@@ -16,8 +16,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 // testes do caso de uso de listar usuarios com paginacao
-// a regra principal aqui e o "ajuste" dos parametros: pagina negativa vira 0 e o tamanho fica entre 1 e 100
-// os testes conferem, com verify, quais valores o caso de uso realmente pediu pro banco
+// a regra principal aqui e o "ajuste" dos parametros: pagina negativa vira 0, e o tamanho fica entre 1 e 100;
+// os testes conferem, com verify, quais valores o caso de uso realmente pediu ao banco
 @ExtendWith(MockitoExtension.class)
 class ListarUsuariosServiceTest {
 
@@ -41,7 +41,7 @@ class ListarUsuariosServiceTest {
         Pagina<Usuario> resultado = listarUsuariosService.listar(2, 5);
 
         // entao: o caso de uso devolve exatamente a pagina que o banco mandou
-        // assertSame confere se e o MESMO objeto (nao so um objeto igual)
+        // (o assertSame confere se e o MESMO objeto, e nao so um objeto igual)
         assertSame(paginaDoBanco, resultado);
     }
 
@@ -49,7 +49,7 @@ class ListarUsuariosServiceTest {
     void deveTrocarPaginaNegativaPorZero() {
         listarUsuariosService.listar(-3, 10);
 
-        // entao: pro banco foi pedida a pagina 0, nao a -3
+        // entao: ao banco foi pedida a pagina 0, e nao a -3
         verify(usuarioRepositoryPort).listar(0, 10);
     }
 

@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-// converte o resultado da analise (dominio) nos json de resposta dos tres resumos
+// transforma o resultado da analise (dominio) no json de resposta de cada um dos tres resumos
 @Component
 public class AnaliseDespesasWebMapper {
 
@@ -43,7 +43,7 @@ public class AnaliseDespesasWebMapper {
     public DespesasPorMesResponseDTO paraMesResponse(AnaliseDeDespesas<DespesaPorMes> analise) {
         List<DespesaPorMesDTO> meses = new ArrayList<>();
         for (DespesaPorMes item : analise.getItens()) {
-            // YearMonth.toString() ja devolve no formato "2026-11"
+            // o YearMonth.toString() ja devolve no formato "2026-11"
             meses.add(new DespesaPorMesDTO(item.getMes().toString(), item.getQuantidade(), item.getTotal()));
         }
 

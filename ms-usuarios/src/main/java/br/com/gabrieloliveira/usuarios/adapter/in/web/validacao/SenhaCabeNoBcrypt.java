@@ -8,13 +8,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-// anotacao de validacao feita por nos, usada no campo senha dos dtos
-// por que nao so um @Size(max = 72)? o bcrypt (que gera o hash da senha) aceita no maximo 72 BYTES,
-// e nao 72 letras: em utf-8 uma letra sem acento ocupa 1 byte, mas "c" com cedilha ou "a" com acento ocupa 2
-// o @Size conta letras, entao 72 letras com acento passariam e o bcrypt lancaria uma excecao (erro 500)
-// (ajuste da revisao do professor 06/11)
+// anotacao de validacao criada por nos, usada no campo senha dos dtos
+// por que nao basta um @Size(max = 72)? porque o bcrypt (que gera o hash da senha) aceita no maximo
+// 72 BYTES, e nao 72 letras: em utf-8 uma letra sem acento ocupa 1 byte, mas um "c" com cedilha ou um
+// "a" com acento ocupam 2. como o @Size conta letras, 72 letras com acento passariam e o bcrypt lancaria
+// uma excecao, virando erro 500 (ajuste da revisao do professor de 06/11)
 //
-// @Constraint liga a anotacao a classe que faz a conferencia de verdade (SenhaCabeNoBcryptValidator)
+// o @Constraint liga a anotacao a classe que faz a conferencia de verdade (SenhaCabeNoBcryptValidator)
 // message, groups e payload sao os tres campos que toda anotacao de bean validation precisa ter
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)

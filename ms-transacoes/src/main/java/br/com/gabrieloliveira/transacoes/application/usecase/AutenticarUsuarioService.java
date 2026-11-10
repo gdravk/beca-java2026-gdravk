@@ -6,8 +6,8 @@ import br.com.gabrieloliveira.transacoes.domain.exception.CredenciaisInvalidasEx
 
 import java.util.Optional;
 
-// autenticacao do ms2: confere email e senha pela AutenticacaoPort (que pergunta ao ms1)
-// e chamado pelo spring security em toda requisicao a uma rota protegida
+// autenticacao do ms2: confere o email e a senha pela AutenticacaoPort (que pergunta ao ms1)
+// e chamado pelo spring security em toda requisicao para uma rota protegida
 public class AutenticarUsuarioService implements AutenticarUsuarioUseCase {
 
     private final AutenticacaoPort autenticacaoPort;
@@ -18,7 +18,7 @@ public class AutenticarUsuarioService implements AutenticarUsuarioUseCase {
 
     @Override
     public Long autenticar(String email, String senha) {
-        // sem email ou senha nem vale a pena chamar o ms1
+        // sem email ou sem senha, nem vale a pena chamar o ms1
         if (email == null || email.isBlank() || senha == null || senha.isEmpty()) {
             throw new CredenciaisInvalidasException();
         }

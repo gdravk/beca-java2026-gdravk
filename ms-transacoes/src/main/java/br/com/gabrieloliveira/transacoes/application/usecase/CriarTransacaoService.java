@@ -14,13 +14,13 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-// fluxo de criacao de transacao:
-// 1. valida os dados da transacao (valor, categoria da compra, destino da transferencia)
-// 2. se for saida, consulta saldo e limites (SaldoContaPort) e aplica as regras do dominio
-// 3. define APPROVED ou REJECTED (com motivo)
+// o caminho da criacao de uma transacao:
+// 1. valida os dados (valor, categoria da compra, destino da transferencia)
+// 2. se for uma saida, consulta o saldo e os limites (SaldoContaPort) e aplica as regras do dominio
+// 3. define APPROVED ou REJECTED (com o motivo)
 // 4. guarda as cotacoes de dolar e euro do momento (PreenchedorDeCotacoes, que usa a CambioPort)
 // 5. salva (TransacaoRepositoryPort) e devolve
-// a transacao e sempre gravada, aprovada ou rejeitada
+// a transacao e sempre gravada, seja aprovada ou rejeitada
 public class CriarTransacaoService implements CriarTransacaoUseCase {
 
     private static final String MOTIVO_SALDO_INDISPONIVEL =
@@ -33,9 +33,8 @@ public class CriarTransacaoService implements CriarTransacaoUseCase {
     private final PreenchedorDeCotacoes preenchedorDeCotacoes;
     private final ValidadorDeTransacao validadorDeTransacao;
 
-    // relogio no fuso de brasilia (bean do BeanConfig)
-    // sem ele, num container em utc, uma compra feita as 22h no brasil seria gravada no dia seguinte,
-    // e cairia no dia errado no limite diario e na analise de despesas
+    // relogio no fuso de brasilia (bean do BeanConfig); sem ele, num container em utc, uma compra feita
+    // as 22h no brasil seria gravada no dia seguinte e cairia no dia errado no limite diario e na analise
     private final Clock relogio;
 
     public CriarTransacaoService(TransacaoRepositoryPort transacaoRepositoryPort,
@@ -58,12 +57,12 @@ public class CriarTransacaoService implements CriarTransacaoUseCase {
         if (erroNosDados.isPresent()) {
             novaTransacao.rejeitar(erroNosDados.get());
         } else {
-            // a compra ja foi validada com categoria; nos outros tipos a categoria e opcional
+            // a compra ja foi validada com categoria; nos outros tipos a categoria e opcional (e vira OUTROS)
             if (novaTransacao.getCategoria() == null) {
                 novaTransacao.setCategoria(Categoria.OUTROS);
             }
 
-            // deposito nao precisa consultar saldo
+            // deposito nao precisa consultar o saldo
             if (novaTransacao.getTipo().isSaida()) {
                 aplicarRegrasDeSaldo(novaTransacao);
             } else {
@@ -72,13 +71,13 @@ public class CriarTransacaoService implements CriarTransacaoUseCase {
         }
 
         // guarda as taxas de dolar e euro do momento da criacao
-        // se a brasilapi estiver fora do ar, a transacao e gravada sem taxa (o cambio e so informativo
-        // e nao pode impedir a transacao); a consulta tenta de novo depois (ver PreenchedorDeCotacoes)
+        // se a brasilapi estiver fora do ar, a transacao e gravada sem taxa (o cambio e so informativo e nao pode
+        // impedir a transacao), e a consulta tenta de novo depois (ver PreenchedorDeCotacoes)
         preenchedorDeCotacoes.preencherFaltantes(novaTransacao);
         return transacaoRepositoryPort.salvar(novaTransacao);
     }
 
-    // sem resposta do servico de saldo a transacao nunca e aprovada as cegas: fica REJECTED com o motivo
+    // sem resposta do servico de saldo, a transacao nunca e aprovada as cegas: fica REJECTED com o motivo
     private void aplicarRegrasDeSaldo(Transacao transacao) {
         Optional<SaldoConta> conta;
         try {

@@ -6,8 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-// uma linha do resumo por dia no json
-// ex: { "data": "2026-11-05", "quantidade": 2, "total": 80.00 }
+// uma linha do resumo por dia, como aparece no json:
+// { "data": "2026-11-05", "quantidade": 2, "total": 80.00 }
 @JsonPropertyOrder({"data", "quantidade", "total"})
 @Schema(description = "total de um dia")
 public class DespesaPorDiaDTO {

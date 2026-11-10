@@ -9,18 +9,18 @@ import java.util.List;
 
 // classe de apoio dos casos de uso: coloca nas transacoes as taxas de dolar e euro que estiverem faltando
 //
-// regra do pedido 3 do PO (e a decisao que tomamos):
-// - na CRIACAO, a transacao guarda as taxas do momento (assim o valor historico fica certo
-//   e a consulta nao depende da brasilapi estar no ar)
-// - se a brasilapi estava fora do ar na criacao, a transacao e gravada sem taxa;
-//   na CONSULTA (buscar e listar), essa classe tenta de novo e mostra a taxa atual
-//   (nesse caso a resposta mostra a data da taxa usada, que vai ser mais nova que a da transacao)
+// a regra do pedido 3 do PO (e a decisao que tomamos):
+// - na CRIACAO, a transacao guarda as taxas do momento; assim o valor historico fica certo e a consulta
+//   nao depende da brasilapi estar no ar
+// - se a brasilapi estava fora do ar na criacao, a transacao e gravada sem taxa; na CONSULTA (buscar,
+//   listar e relatorio) esta classe tenta de novo e mostra a taxa atual, com a data dela (que vai ser
+//   mais nova que a da transacao)
 // - se mesmo assim nao conseguir, a transacao segue sem taxa e a resposta avisa "conversao indisponivel"
 //   (a consulta NUNCA quebra por causa do cambio)
 //
 // a taxa preenchida na consulta nao e gravada no banco: a transacao continua exatamente como foi criada
 //
-// e java puro, sem @Component: o BeanConfig cria e entrega pros casos de uso que precisam dela
+// e java puro, sem @Component: o BeanConfig cria e entrega para os casos de uso que precisam dela
 public class PreenchedorDeCotacoes {
 
     private static final String DOLAR = "USD";
@@ -32,14 +32,14 @@ public class PreenchedorDeCotacoes {
         this.cambioPort = cambioPort;
     }
 
-    // versao pra uma transacao so (usada no criar e no buscar)
+    // versao para uma transacao so (usada no criar e no buscar)
     public void preencherFaltantes(Transacao transacao) {
         preencherFaltantes(List.of(transacao));
     }
 
-    // versao pra uma lista (usada no listar)
-    // a brasilapi e chamada no maximo UMA vez por moeda, mesmo que varias transacoes da lista estejam sem taxa;
-    // assim a listagem nao fica lenta fazendo uma chamada por transacao
+    // versao para uma lista (usada no listar e no relatorio)
+    // a brasilapi e chamada no maximo UMA vez por moeda, mesmo que varias transacoes da lista estejam sem
+    // taxa; assim a listagem nao fica lenta fazendo uma chamada por transacao
     public void preencherFaltantes(List<Transacao> transacoes) {
         if (algumaSemTaxaDeDolar(transacoes)) {
             Cotacao dolar = buscarOuNull(DOLAR);
@@ -66,7 +66,7 @@ public class PreenchedorDeCotacoes {
         }
     }
 
-    // pergunta pra porta de cambio; se o servico falhar, devolve null em vez de deixar a excecao subir,
+    // pergunta para a porta de cambio; se o servico falhar, devolve null em vez de deixar a excecao subir,
     // porque o cambio e so informativo e nao pode derrubar a criacao nem a consulta da transacao
     private Cotacao buscarOuNull(String moeda) {
         try {

@@ -32,14 +32,14 @@ class GeradorCsvRelatorioTest {
     void arquivoComecaComOBomDoUtf8ParaOExcelLerOsAcentos() {
         byte[] arquivo = gerador.gerar(RelatorioTransacoes.montar(1L, NOVEMBRO, List.of()));
 
-        // EF BB BF = o BOM; sem esses 3 bytes o excel em portugues quebra os acentos
+        // EF BB BF = o BOM; sem esses 3 bytes, o excel em portugues quebra os acentos
         byte[] inicio = {arquivo[0], arquivo[1], arquivo[2]};
         assertArrayEquals(new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF}, inicio);
     }
 
     @Test
     void compraAprovadaViraUmaLinhaNoFormatoDoExcelEmPortugues() {
-        // dado: compra de 150,75 com cotacao do dolar 5,4321 e do euro 6,1234
+        // dado: uma compra de 150,75, com o dolar a 5,4321 e o euro a 6,1234
         Transacao compra = transacao(10L, TipoTransacao.COMPRA, "150.75", "mercado do mês");
         compra.setCategoria(Categoria.ALIMENTACAO);
         compra.setTaxaDolar(new BigDecimal("5.4321"));
@@ -50,7 +50,7 @@ class GeradorCsvRelatorioTest {
         List<String> linhas = linhas(RelatorioTransacoes.montar(1L, NOVEMBRO, List.of(compra)));
 
         // entao: separador ";", virgula decimal, data dd/mm/aaaa, nomes com acento e o valor convertido
-        // 150,75 / 5,4321 = 27,75 dolares; 150,75 / 6,1234 = 24,62 euros
+        // (150,75 / 5,4321 = 27,75 dolares e 150,75 / 6,1234 = 24,62 euros)
         assertEquals(CABECALHO, linhas.get(0));
         assertEquals("10;05/11/2026 14:30;Compra;Alimentação;mercado do mês;150,75;Aprovada;;;;5,4321;27,75;"
                 + "6,1234;24,62", linhas.get(1));
@@ -99,7 +99,7 @@ class GeradorCsvRelatorioTest {
 
     @Test
     void descricaoQueComecaComSinalDeFormulaNaoViraFormulaNoExcel() {
-        // csv injection: sem a protecao, o excel executaria isso como formula ao abrir o arquivo
+        // csv injection: sem a protecao, o excel executaria isto como formula ao abrir o arquivo
         Transacao compra = transacao(15L, TipoTransacao.COMPRA, "10", "=HYPERLINK(\"http://site-malicioso\")");
         compra.setCategoria(Categoria.LAZER);
         compra.aprovar();
@@ -124,7 +124,7 @@ class GeradorCsvRelatorioTest {
 
         List<String> linhas = linhas(RelatorioTransacoes.montar(1L, NOVEMBRO, List.of(deposito, compra, rejeitada)));
 
-        // cabecalho + 3 transacoes + linha em branco + 7 linhas de resumo
+        // cabecalho + 3 transacoes + uma linha em branco + 7 linhas de resumo
         assertEquals("", linhas.get(4));
         assertEquals(List.of("Resumo",
                 "Período;01/11/2026 a 30/11/2026",
@@ -141,11 +141,11 @@ class GeradorCsvRelatorioTest {
                 StandardCharsets.UTF_8);
 
         assertTrue(texto.endsWith("\r\n"));
-        // nenhuma quebra "solta" (\n sem o \r antes)
+        // nenhuma quebra de linha "solta" (um \n sem o \r antes)
         assertEquals(texto.split("\n", -1).length, texto.split("\r\n", -1).length);
     }
 
-    // le o arquivo como o excel faria: utf-8, sem o BOM, uma linha por \r\n
+    // le o arquivo como o excel leria: em utf-8, sem o BOM, uma linha por \r\n
     private List<String> linhas(RelatorioTransacoes relatorio) {
         String texto = new String(gerador.gerar(relatorio), StandardCharsets.UTF_8);
         return List.of(texto.substring(1).split("\r\n", -1));

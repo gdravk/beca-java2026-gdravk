@@ -40,18 +40,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-// adaptador de entrada: a porta http do ms1, recebe as requisicoes em /users e devolve json
-// ele nao tem regra de negocio: converte o dto, chama a porta de entrada certa e devolve o status
-// repara que ele so conhece as interfaces (UseCase), nunca as classes que implementam
+// adaptador de entrada: e a porta http do ms1, recebe as requisicoes em /users e devolve json
+// nao tem regra de negocio aqui: ele converte o dto, chama o caso de uso certo e devolve o status http
+// repara que ele so conhece as interfaces (UseCase), nunca as classes que fazem o trabalho
 @RestController
 @RequestMapping("/users")
-// validacao dos parametros da url (fase 13): @Positive, @Min e @Max direto no parametro
-// desde o spring 6.1 o proprio spring mvc valida esses parametros sozinho, sem precisar de @Validated na classe
-// (com @Validated a validacao rodaria duas vezes, uma pelo spring mvc e outra pelo proxy do @Validated)
-// quando falha, ele lanca HandlerMethodValidationException, que o GlobalExceptionHandler transforma em 400
+// validacao dos parametros da url: @Positive, @Min e @Max vao direto no parametro
+// desde o spring 6.1 o proprio spring mvc valida esses parametros sozinho, sem @Validated na classe
+// (com @Validated a validacao rodaria duas vezes). quando algo falha, ele lanca a
+// HandlerMethodValidationException, que o GlobalExceptionHandler transforma em 400
 //
-// swagger (fase 15): @Tag da o nome do grupo na tela, @Operation o resumo de cada rota
-// e @ApiResponses lista os codigos que a rota pode responder (os erros sempre no formato ErroResponseDTO)
+// swagger: o @Tag da o nome do grupo na tela, o @Operation resume cada rota e o @ApiResponses lista
+// os codigos que ela pode responder (os erros vem sempre no formato do ErroResponseDTO)
 @Tag(name = "Usuarios", description = "cadastro, consulta, atualizacao e exclusao de usuarios")
 public class UsuarioController {
 
@@ -78,10 +78,10 @@ public class UsuarioController {
         this.usuarioWebMapper = usuarioWebMapper;
     }
 
-    // POST /users -> cria um usuario e responde 201 created
-    // @Valid manda o spring rodar as validacoes do dto antes de entrar no metodo
-    // @RequestBody diz que os dados vem no corpo da requisicao, em json
-    // @SecurityRequirements() vazio = rota aberta: o swagger tira o cadeado (o cadastro nao exige login)
+    // POST /users: cria um usuario e responde 201 (created)
+    // o @Valid manda o spring rodar as validacoes do dto antes de entrar no metodo, e o @RequestBody
+    // diz que os dados vem no corpo da requisicao, em json
+    // o @SecurityRequirements() vazio tira o cadeado do swagger: o cadastro e uma rota aberta, sem login
     @Operation(summary = "Cadastra um usuario",
             description = "Rota aberta (sem login). A senha e gravada criptografada com BCrypt e nunca volta na resposta.")
     @SecurityRequirements()
@@ -99,10 +99,10 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioWebMapper.paraResponse(criado));
     }
 
-    // GET /users -> lista paginada, responde 200
-    // da pra escolher a pagina pela url, ex: /users?pagina=0&tamanho=5
-    // se nao mandar nada, vem a primeira pagina (0) com 10 usuarios, ordenados por id
-    // cada usuario vem sem o cpf (dado pessoal), so com id, nome, email e data de criacao
+    // GET /users: lista paginada, responde 200
+    // da para escolher a pagina pela url, como em /users?pagina=0&tamanho=5; sem nada, vem a primeira
+    // pagina (0) com 10 usuarios, ordenados por id
+    // cada usuario vem sem o cpf (que e dado pessoal), so com id, nome, email e data de criacao
     @Operation(summary = "Lista os usuarios (paginado)",
             description = "Mostra id, nome, email e data de criacao, ordenados por id. O cpf nao aparece na listagem.")
     @ApiResponses({
@@ -125,9 +125,9 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioWebMapper.paraPaginaResponse(resultado));
     }
 
-    // GET /users/{id} -> busca um usuario com todos os dados (inclusive cpf), responde 200 (ou 404 se nao existir)
+    // GET /users/{id}: devolve o usuario com todos os dados, inclusive o cpf (ou 404 se ele nao existir)
     // so o proprio usuario pode ver os dados completos dele; o id de outra pessoa responde 403
-    // @PathVariable pega o {id} que veio na url
+    // o @PathVariable pega o {id} que veio na url
     @Operation(summary = "Busca os dados completos da propria conta",
             description = "Inclui o cpf. So funciona com o id do usuario logado.")
     @ApiResponses({
@@ -151,10 +151,10 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioWebMapper.paraResponse(usuario));
     }
 
-    // PUT /users/{id} -> atualiza um usuario, responde 200
-    // usa o UsuarioUpdateRequestDTO (e nao o UsuarioRequestDTO do cadastro) porque aqui a senha e opcional:
-    // se o json nao trouxer "senha", a senha atual e mantida
-    // @AuthenticationPrincipal entrega quem esta logado (o UsuarioAutenticado criado no login)
+    // PUT /users/{id}: atualiza o usuario e responde 200
+    // usa o UsuarioUpdateRequestDTO, e nao o do cadastro, porque aqui a senha e opcional:
+    // se o json nao trouxer "senha", a senha atual continua valendo
+    // o @AuthenticationPrincipal entrega quem esta logado (o UsuarioAutenticado criado no login)
     @Operation(summary = "Atualiza a propria conta",
             description = "Nome, email e cpf sao obrigatorios. A senha e opcional: sem ela, a senha atual e mantida.")
     @ApiResponses({
@@ -182,7 +182,7 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioWebMapper.paraResponse(atualizado));
     }
 
-    // DELETE /users/{id} -> exclui um usuario, responde 204 no content (sucesso, mas sem corpo)
+    // DELETE /users/{id}: exclui o usuario e responde 204 (no content: deu certo, mas nao ha corpo na resposta)
     @Operation(summary = "Exclui a propria conta",
             description = "So funciona com o id do usuario logado. Depois disso, o login dessa conta deixa de valer.")
     @ApiResponses({
@@ -207,7 +207,7 @@ public class UsuarioController {
     }
 
     // seguranca (pedido 6): cada usuario so pode ver os dados completos, alterar ou excluir a propria conta
-    // a listagem continua liberada pra qualquer usuario logado, mas sem cpf (e nunca com senha)
+    // a listagem continua aberta para qualquer usuario logado, mas sem cpf (e nunca com senha)
     private void garantirQueEOProprioUsuario(Long idDaRota, UsuarioAutenticado logado, String mensagem) {
         if (!idDaRota.equals(logado.getId())) {
             throw new AcessoNegadoException(mensagem);

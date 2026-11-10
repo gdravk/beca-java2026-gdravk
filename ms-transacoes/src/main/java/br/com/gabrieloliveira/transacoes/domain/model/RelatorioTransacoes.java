@@ -5,7 +5,7 @@ import java.util.List;
 
 // o relatorio de transacoes de um usuario num periodo (pedido 7 do PO)
 // guarda as transacoes (da mais antiga para a mais nova) e os totais do resumo
-// e java puro: nao sabe nada de csv; quem transforma isso em arquivo e o adaptador web
+// e java puro e nao sabe nada de csv; quem transforma isso em arquivo e o adaptador web
 public class RelatorioTransacoes {
 
     private final Long usuarioId;
@@ -29,8 +29,8 @@ public class RelatorioTransacoes {
     }
 
     // monta o relatorio e ja calcula o resumo
-    // so as transacoes APROVADAS entram nos totais em dinheiro: uma rejeitada nunca movimentou a conta
-    // os estornos entram como o tipo que eles sao (estorno de compra e um DEPOSITO, por exemplo),
+    // so as transacoes APROVADAS entram nos totais em dinheiro, porque uma rejeitada nunca movimentou a conta
+    // os estornos entram como o tipo que eles sao (o estorno de uma compra e um DEPOSITO, por exemplo),
     // porque e assim que o dinheiro realmente se moveu
     public static RelatorioTransacoes montar(Long usuarioId, Periodo periodo, List<Transacao> transacoes) {
         int aprovadas = 0;
@@ -51,7 +51,7 @@ public class RelatorioTransacoes {
             }
         }
 
-        // List.copyOf: o relatorio guarda uma copia que ninguem consegue alterar depois
+        // o List.copyOf faz o relatorio guardar uma copia que ninguem consegue alterar depois
         return new RelatorioTransacoes(usuarioId, periodo, List.copyOf(transacoes), aprovadas, rejeitadas,
                 depositos, saidas);
     }

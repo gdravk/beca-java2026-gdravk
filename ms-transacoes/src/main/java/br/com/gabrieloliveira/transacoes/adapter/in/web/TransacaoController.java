@@ -33,16 +33,16 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.util.List;
 
-// endpoints de transacao do ms2
-// nao existe DELETE nem PUT: transacao nunca e apagada ou alterada, a correcao e feita por estorno
-// todas as rotas exigem login (SecurityConfig) e so mostram ou criam transacoes do usuario logado
+// rotas de transacao do ms2
+// nao existe DELETE nem PUT: transacao nunca e apagada nem alterada, e a correcao e feita por estorno
+// todas as rotas exigem login (SecurityConfig) e so mostram ou criam transacoes de quem esta logado
 @RestController
 @RequestMapping("/transactions")
-// os ids da url e do filtro sao validados direto no parametro (fase 13): zero ou negativo responde 400
-// o spring mvc faz essa validacao sozinho (sem @Validated), igual no ms1
+// os ids da url e do filtro sao validados direto no parametro: zero ou negativo responde 400
+// (o spring mvc faz essa validacao sozinho, sem @Validated, igual no ms1)
 //
-// swagger (fase 15): @Tag da o nome do grupo na tela, @Operation o resumo de cada rota
-// e @ApiResponses lista os codigos que a rota pode responder (os erros sempre no formato ErroResponseDTO)
+// swagger: o @Tag da o nome do grupo na tela, o @Operation resume cada rota e o @ApiResponses lista
+// os codigos que ela pode responder (os erros vem sempre no formato do ErroResponseDTO)
 // o 503 aparece em todas as rotas porque o login e conferido no ms1: com o ms1 fora do ar, ninguem entra
 @Tag(name = "Transacoes", description = "registro, consulta e estorno de transacoes do usuario logado")
 public class TransacaoController {
@@ -70,9 +70,9 @@ public class TransacaoController {
         this.usuarioLogado = usuarioLogado;
     }
 
-    // POST /transactions -> 201 com id e status, mesmo quando a transacao e rejeitada
-    // (a rejeicao e um resultado de negocio gravado, nao um erro da requisicao)
-    // a transacao sempre fica no nome de quem esta logado; mandar o usuarioId de outro responde 403
+    // POST /transactions: responde 201 com o id e o status, mesmo quando a transacao e rejeitada
+    // (a rejeicao e um resultado de negocio que fica gravado, e nao um erro da requisicao)
+    // a transacao fica sempre no nome de quem esta logado; mandar o usuarioId de outra pessoa responde 403
     @Operation(summary = "Registra uma transacao",
             description = "Responde 201 mesmo quando a transacao e rejeitada (status REJECTED com o motivo): "
                     + "a rejeicao e uma decisao de negocio gravada, e nao um erro. Saidas (RETIRADA, TRANSFERENCIA "
@@ -97,8 +97,8 @@ public class TransacaoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(transacaoWebMapper.paraResponse(criada));
     }
 
-    // GET /transactions/{id} -> 200 com valor em reais, dolar e euro (ou 404)
-    // transacao de outro usuario tambem responde 404 (o caso de uso confere o dono antes de buscar o cambio)
+    // GET /transactions/{id}: 200 com o valor em reais, dolar e euro (ou 404)
+    // a transacao de outro usuario tambem responde 404 (o caso de uso confere o dono antes de buscar o cambio)
     @Operation(summary = "Busca uma transacao pelo id",
             description = "Mostra o valor em reais e convertido para dolar e euro. "
                     + "Transacao de outro usuario responde 404, como se nao existisse.")
@@ -122,7 +122,7 @@ public class TransacaoController {
     }
 
     // GET /transactions?inicio=2026-11-01&fim=2026-11-30&tipo=COMPRA
-    // todos os filtros sao opcionais; datas no formato aaaa-mm-dd
+    // todos os filtros sao opcionais, e as datas vao no formato aaaa-mm-dd
     // lista as transacoes de quem esta logado; o usuarioId so e aceito se for o do proprio usuario (senao 403)
     @Operation(summary = "Lista as transacoes do usuario logado",
             description = "Todos os filtros sao opcionais. Sem datas, traz todo o historico.")
@@ -152,8 +152,8 @@ public class TransacaoController {
         return ResponseEntity.ok(transacaoWebMapper.paraListaResponse(transacoes));
     }
 
-    // POST /transactions/{id}/estorno -> 201 com a nova transacao de estorno
-    // so o dono da transacao pode estornar (a conferencia e feita no caso de uso, antes de criar o estorno)
+    // POST /transactions/{id}/estorno: responde 201 com a nova transacao, a de estorno
+    // so o dono da transacao pode estornar (o caso de uso confere isso antes de criar o estorno)
     @Operation(summary = "Estorna uma transacao aprovada",
             description = "Cria uma transacao nova com o tipo inverso, ligada a original pelo transacaoOriginalId: "
                     + "uma saida volta como DEPOSITO e um deposito volta como RETIRADA. A original nunca e apagada.")

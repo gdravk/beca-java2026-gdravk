@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-// o resumo da importacao que o PO pediu: quantas linhas vieram, quantas entraram e quais falharam (com o motivo)
-// o caso de uso vai preenchendo esse objeto linha por linha, sem parar no primeiro erro
+// o resumo da importacao que o PO pediu: quantas linhas vieram, quantas entraram e quais falharam (e por que)
+// o caso de uso vai preenchendo este objeto linha por linha, sem parar no primeiro erro
 public class ResultadoImportacao {
 
     private int totalLinhas;
@@ -30,7 +30,7 @@ public class ResultadoImportacao {
         return importados;
     }
 
-    // rejeitados nao precisa de um contador proprio: e o tamanho da lista de falhas
+    // os rejeitados nao precisam de um contador proprio: sao o tamanho da lista de falhas
     public int getRejeitados() {
         return falhas.size();
     }

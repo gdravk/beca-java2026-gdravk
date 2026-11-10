@@ -1,6 +1,6 @@
 package br.com.gabrieloliveira.transacoes.adapter.out.ms1;
 
-// json enviado pro ms1 no POST /auth/verificar: { "email": "...", "senha": "..." }
+// json enviado ao ms1 no POST /auth/verificar: { "email": "...", "senha": "..." }
 public class CredenciaisMs1RequestDTO {
 
     private String email;

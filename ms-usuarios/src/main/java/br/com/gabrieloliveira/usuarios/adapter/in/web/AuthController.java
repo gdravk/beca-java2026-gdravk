@@ -22,18 +22,18 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-// rota que o ms2 usa pra saber quem e o usuario (seguranca, pedido 6)
+// rota que o ms2 usa para descobrir quem e o usuario (seguranca, pedido 6)
 //
-// o caminho de uma requisicao no ms2:
+// como uma requisicao chega ate aqui:
 // 1. o cliente chama o ms2 com email e senha (autenticacao basica)
-// 2. o ms2 chama aqui: POST /auth/verificar { "email": "...", "senha": "..." }
-// 3. aqui conferimos a senha com o bcrypt e respondemos o id do usuario (200) ou 401
-// 4. o ms2 usa esse id pra garantir que o usuario so mexe nas proprias transacoes
+// 2. o ms2 repassa para ca: POST /auth/verificar com { "email": "...", "senha": "..." }
+// 3. conferimos a senha com o bcrypt e devolvemos o id do usuario (200), ou 401 se estiver errada
+// 4. com esse id, o ms2 garante que cada usuario so mexe nas proprias transacoes
 //
-// a rota nao exige login de usuario (e ela mesma que confere o login), mas exige a chave interna
-// no cabecalho X-Chave-Interna, que so o ms2 conhece; sem a chave: 403, e a senha nem e conferida
-// (assim ninguem de fora usa essa rota pra testar senhas por forca bruta)
-// e POST (e nao GET) pra senha ir no corpo, e nao na url (url aparece em log de servidor)
+// a rota nao pede login (ela e justamente quem confere o login), mas pede a chave interna no cabecalho
+// X-Chave-Interna, que so o ms2 conhece. sem a chave a resposta e 403 e a senha nem chega a ser conferida,
+// entao ninguem de fora consegue usar essa rota para adivinhar senhas na base da tentativa e erro
+// e um POST, e nao um GET, para a senha ir no corpo da requisicao: a url costuma ficar gravada nos logs
 @RestController
 @RequestMapping("/auth")
 @Tag(name = "Autenticacao interna", description = "rota usada pelo ms2 para conferir o login dos usuarios")
@@ -48,9 +48,10 @@ public class AuthController {
         this.verificadorDeChaveInterna = verificadorDeChaveInterna;
     }
 
-    // 200 com o usuario, 401 se o email ou a senha estiverem errados, 400 se faltar campo, 403 sem a chave interna
-    // required = false no cabecalho: sem ele o spring responderia um 400 generico; assim o 403 sai com a nossa mensagem
-    // @SecurityRequirements() vazio: essa rota nao usa o login do botao Authorize, e sim a chave interna no cabecalho
+    // respostas possiveis: 200 com o usuario, 401 email ou senha errados, 400 faltou campo, 403 sem a chave interna
+    // o cabecalho e required = false porque, se fosse obrigatorio, o spring devolveria um 400 generico;
+    // assim quem responde e o verificador, com o 403 e a nossa mensagem
+    // @SecurityRequirements() vazio: aqui o login nao vem do botao Authorize do swagger, e sim da chave interna
     @Operation(summary = "Confere email e senha (uso interno do ms2)",
             description = "Exige o cabecalho X-Chave-Interna com o mesmo valor da variavel MS1_CHAVE_INTERNA. "
                     + "Responde o id do usuario quando o email e a senha estao certos.")

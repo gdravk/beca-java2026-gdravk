@@ -6,8 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 // corpo do POST /auth/verificar: o email e a senha que o ms2 recebeu do usuario
-// os limites de tamanho sao os mesmos do cadastro: um texto gigante nem chega a ser procurado no banco
-// nao usamos @Email aqui de proposito: email em formato errado so nao bate com ninguem e vira "login invalido"
+// os limites de tamanho sao os mesmos do cadastro, assim um texto gigante nem chega a ser procurado no banco
+// nao tem @Email de proposito: um email em formato errado simplesmente nao bate com ninguem e vira "login invalido"
 @Schema(description = "email e senha a conferir")
 public class CredenciaisRequestDTO {
 

@@ -12,14 +12,14 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 // corpo do POST /transactions
-// aqui fica a validacao de formato (bean validation, responde 400)
-// regras de negocio (saldo, limites, categoria da compra, destino da transferencia) ficam no dominio
-// e resultam em transacao REJECTED com motivo, nao em erro 400
-// o dono da transacao e o usuario logado (seguranca, pedido 6); o usuarioId no corpo e opcional
+// aqui fica so a validacao de formato (bean validation, que responde 400); as regras de negocio (saldo,
+// limites, categoria da compra, destino da transferencia) ficam no dominio e terminam numa transacao
+// REJECTED com o motivo, e nao num erro 400
+// o dono da transacao e quem esta logado (seguranca, pedido 6), por isso o usuarioId do corpo e opcional
 @Schema(description = "dados para registrar uma transacao")
 public class TransacaoRequestDTO {
 
-    // opcional desde a seguranca (pedido 6): sem ele, a transacao e do usuario logado
+    // opcional desde a seguranca (pedido 6): sem ele, a transacao fica no nome de quem esta logado
     // se vier, tem que ser o id do proprio usuario logado (outro id responde 403)
     @Positive(message = "o usuarioId deve ser positivo")
     @Schema(description = "opcional: sem ele, a transacao e do usuario logado; se vier, tem que ser o id dele", example = "1", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
@@ -35,7 +35,7 @@ public class TransacaoRequestDTO {
     @Schema(description = "valor em reais, maior que zero e com no maximo 2 casas decimais", example = "150.75")
     private BigDecimal valor;
 
-    // obrigatoria so para COMPRA (regra do dominio)
+    // obrigatoria so para COMPRA (regra que fica no dominio)
     @Schema(description = "obrigatoria so para COMPRA; nos outros tipos, sem ela vira OUTROS", example = "ALIMENTACAO", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Categoria categoria;
 
@@ -44,7 +44,7 @@ public class TransacaoRequestDTO {
     @Schema(description = "descricao livre", example = "mercado do mes")
     private String descricao;
 
-    // obrigatorio so para TRANSFERENCIA (regra do dominio)
+    // obrigatorio so para TRANSFERENCIA (regra que fica no dominio)
     @Positive(message = "o usuarioDestinoId deve ser positivo")
     @Schema(description = "obrigatorio so para TRANSFERENCIA: o id de quem recebe (nao pode ser o proprio usuario)", example = "2", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Long usuarioDestinoId;

@@ -22,17 +22,17 @@ import org.springframework.context.annotation.Configuration;
 import java.time.Clock;
 import java.time.ZoneId;
 
-// aqui e onde as pecas se encaixam
-// os casos de uso sao java puro (sem @Service), entao o spring nao cria eles sozinho
-// cada metodo @Bean abaixo cria um caso de uso e entrega pra ele as portas de saida que ele precisa
-// o spring descobre sozinho quem implementa cada porta (UsuarioPersistenceAdapter, BCryptSenhaEncoderAdapter)
-// e o controller recebe esses casos de uso pelas interfaces (portas de entrada)
+// aqui as pecas se encaixam
+// os casos de uso sao java puro (sem @Service), entao o spring nao cria eles sozinho: cada metodo @Bean
+// abaixo cria um caso de uso e entrega para ele as portas de saida que ele precisa
+// o spring descobre sozinho quem implementa cada porta (UsuarioPersistenceAdapter, BCryptSenhaEncoderAdapter),
+// e os controllers recebem esses casos de uso pelas interfaces (as portas de entrada)
 @Configuration
 public class BeanConfig {
 
-    // o relogio da aplicacao, sempre no fuso de brasilia (igual ao ms2)
-    // sem fixar o fuso, num container em utc a data de criacao seria a de londres
-    // fica num bean pra que os testes possam usar um relogio parado no lugar dele
+    // o relogio da aplicacao, sempre no fuso de brasilia (igual ao ms2); sem fixar o fuso, num container
+    // em utc a data de criacao seria a de londres
+    // ele e um bean para os testes poderem usar um relogio parado no lugar dele
     @Bean
     public Clock relogio() {
         return Clock.system(ZoneId.of("America/Sao_Paulo"));
@@ -66,8 +66,8 @@ public class BeanConfig {
         return new ExcluirUsuarioService(usuarioRepositoryPort);
     }
 
-    // a importacao recebe o caso de uso de criar (o bean de cima), e nao o repositorio:
-    // assim cada linha do csv passa pelas mesmas regras do POST /users, sem repetir codigo
+    // a importacao recebe o caso de uso de criar (o bean de cima), e nao o repositorio: assim cada linha
+    // do csv passa pelas mesmas regras do POST /users, sem repetir codigo
     @Bean
     public ImportarUsuariosUseCase importarUsuariosUseCase(CriarUsuarioUseCase criarUsuarioUseCase) {
         return new ImportarUsuariosService(criarUsuarioUseCase);

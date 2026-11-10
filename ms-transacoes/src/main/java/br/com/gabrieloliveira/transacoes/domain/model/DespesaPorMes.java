@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.YearMonth;
 
 // uma linha do resumo por mes: quanto foi gasto naquele mes e em quantas transacoes
-// YearMonth guarda so ano e mes (ex: 2026-11), sem dia, que e exatamente o que precisamos aqui
+// o YearMonth guarda so o ano e o mes (2026-11), sem o dia, que e exatamente o que precisamos aqui
 public class DespesaPorMes {
 
     private final YearMonth mes;

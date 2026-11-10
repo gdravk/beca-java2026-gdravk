@@ -2,13 +2,13 @@ package br.com.gabrieloliveira.usuarios.domain.model;
 
 import java.util.List;
 
-// um "pedaco" de uma lista grande: os itens da pagina atual e as informacoes pra navegar nas outras
-// criamos a nossa propria classe em vez de usar o Page do spring pra o centro do sistema nao depender do spring
-// o <T> quer dizer que ela serve pra qualquer tipo de item (Pagina<Usuario>, Pagina<UsuarioResponseDTO>...)
+// um "pedaco" de uma lista grande: os itens da pagina atual e as informacoes para navegar pelas outras
+// criamos a nossa propria classe, em vez de usar o Page do spring, para o centro do sistema nao depender do spring
+// o <T> quer dizer que ela serve para qualquer tipo de item (Pagina<Usuario>, Pagina<UsuarioResponseDTO>...)
 public class Pagina<T> {
 
     private List<T> conteudo;
-    // a contagem comeca em 0: a primeira pagina e a 0
+    // a contagem comeca em 0: a primeira pagina e a pagina 0
     private int numeroPagina;
     private int tamanhoPagina;
     private long totalElementos;

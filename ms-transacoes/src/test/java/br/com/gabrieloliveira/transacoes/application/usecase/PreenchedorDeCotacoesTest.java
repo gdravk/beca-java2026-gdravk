@@ -55,7 +55,7 @@ class PreenchedorDeCotacoesTest {
 
     @Test
     void transacaoQueJaTemAsTaxasNaoConsultaOCambio() {
-        // as taxas guardadas na criacao valem pra sempre: nao podem ser trocadas pela de hoje
+        // as taxas guardadas na criacao valem para sempre: nao podem ser trocadas pela de hoje
         Transacao transacao = transacaoComTaxas();
 
         preenchedor.preencherFaltantes(transacao);
@@ -88,7 +88,7 @@ class PreenchedorDeCotacoesTest {
         when(cambioPort.buscarCotacaoAtual("EUR")).thenThrow(new ServicoExternoIndisponivelException("fora"));
         Transacao transacao = new Transacao();
 
-        // nao lanca excecao: o cambio e so informativo
+        // nao lanca excecao, porque o cambio e so informativo
         preenchedor.preencherFaltantes(transacao);
 
         assertNull(transacao.getTaxaDolar());

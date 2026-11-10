@@ -8,8 +8,8 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.context.annotation.Configuration;
 
 // configuracao do swagger
-// o @SecurityScheme cria o botao "Authorize": a pessoa digita email e senha de um usuario do ms1 uma vez
-// e o swagger passa a mandar o cabecalho "Authorization: Basic ..." em todas as chamadas
+// o @SecurityScheme cria o botao "Authorize": a pessoa digita uma vez o email e a senha de um usuario
+// do ms1, e o swagger passa a mandar o cabecalho "Authorization: Basic ..." em todas as chamadas
 @Configuration
 @OpenAPIDefinition(
         info = @Info(title = "MS2 - Transacoes", version = "1.0",

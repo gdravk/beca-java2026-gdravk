@@ -57,9 +57,9 @@ class BuscarTransacaoServiceTest {
         RecursoNaoEncontradoException erro = assertThrows(RecursoNaoEncontradoException.class,
                 () -> service.buscarPorId(10L, 2L));
 
-        // mesma mensagem de uma transacao que nao existe: quem pediu nao descobre que o id e de outra pessoa
+        // a mesma mensagem de uma transacao que nao existe: quem pediu nao descobre que o id e de outra pessoa
         assertEquals("transacao com id 10 nao encontrada", erro.getMessage());
-        // o dono e conferido antes do cambio: a brasilapi nao e chamada
+        // o dono e conferido antes do cambio, entao a brasilapi nem e chamada
         verify(cambioPort, never()).buscarCotacaoAtual(anyString());
     }
 

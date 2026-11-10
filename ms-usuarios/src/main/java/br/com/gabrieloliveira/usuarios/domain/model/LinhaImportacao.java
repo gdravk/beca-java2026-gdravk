@@ -1,10 +1,9 @@
 package br.com.gabrieloliveira.usuarios.domain.model;
 
-// uma linha do arquivo de importacao, ja lida e conferida
-// cada linha termina de um destes dois jeitos:
-// - valida: tem um Usuario pronto pra ser cadastrado
-// - invalida: nao deu pra montar o usuario (campo vazio, email errado...) e o motivo fica em "erro"
-// o numero da linha e guardado pra que o resumo diga exatamente onde esta o problema no arquivo
+// uma linha do arquivo de importacao, ja lida e conferida; ela termina de um destes dois jeitos:
+// - valida: tem um Usuario pronto para ser cadastrado
+// - invalida: nao deu para montar o usuario (campo vazio, email errado...) e o motivo fica em "erro"
+// o numero da linha e guardado para o resumo dizer exatamente onde esta o problema no arquivo
 // (a contagem e a mesma do editor de texto: o cabecalho e a linha 1)
 public class LinhaImportacao {
 
@@ -12,7 +11,7 @@ public class LinhaImportacao {
     private final Usuario usuario;
     private final String erro;
 
-    // construtor privado: quem cria uma linha usa os metodos "valida" ou "invalida" abaixo,
+    // construtor privado: para criar uma linha, use os metodos "valida" ou "invalida" abaixo
     // assim nunca existe uma linha com usuario e erro ao mesmo tempo
     private LinhaImportacao(int numeroLinha, Usuario usuario, String erro) {
         this.numeroLinha = numeroLinha;

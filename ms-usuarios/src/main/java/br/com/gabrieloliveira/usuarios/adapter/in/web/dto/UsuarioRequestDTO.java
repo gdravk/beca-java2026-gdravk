@@ -7,9 +7,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-// o que o cliente manda no corpo (json) do POST e do PUT
-// as anotacoes de validacao barram dados ruins antes de chegar nos casos de uso
-// se algo falhar aqui, a api responde 400 com a lista dos campos errados
+// o que o cliente manda no corpo (json) do POST /users
+// as anotacoes de validacao barram os dados ruins antes de chegarem nos casos de uso; se algo falhar,
+// a api responde 400 com a lista dos campos errados
 @Schema(description = "dados para cadastrar um usuario")
 public class UsuarioRequestDTO {
 
@@ -24,7 +24,7 @@ public class UsuarioRequestDTO {
     @Schema(description = "email (vira o login); espacos nas pontas sao removidos e tudo vai para minusculo", example = "ana.souza@email.com")
     private String email;
 
-    // \\d{11} quer dizer: exatamente 11 digitos, nada de ponto ou traco
+    // \\d{11} quer dizer: exatamente 11 digitos, sem ponto e sem traco
     @NotBlank(message = "o cpf e obrigatorio")
     @Pattern(regexp = "\\d{11}", message = "o cpf deve ter exatamente 11 numeros, sem ponto e sem traco")
     @Schema(description = "exatamente 11 numeros, sem ponto e sem traco", example = "12345678901")
@@ -36,7 +36,7 @@ public class UsuarioRequestDTO {
     @Schema(description = "de 6 caracteres ate 72 bytes (letra com acento conta como 2); gravada criptografada", example = "Senha@123")
     private String senha;
 
-    // construtor vazio pro jackson conseguir criar o objeto a partir do json
+    // construtor vazio para o jackson conseguir criar o objeto a partir do json
     public UsuarioRequestDTO() {
     }
 
@@ -52,10 +52,10 @@ public class UsuarioRequestDTO {
         return email;
     }
 
-    // o jackson chama esse setter quando le o json, ANTES das validacoes (@Email, @NotBlank) rodarem
-    // por isso o trim e feito aqui tambem: sem ele, " ana@email.com " (com espaco, comum ao copiar e colar)
-    // seria barrado pelo @Email com erro 400, e nem chegaria na normalizacao do dominio
-    // o resto da normalizacao (deixar em minusculo) fica no Usuario do dominio
+    // o jackson chama este setter quando le o json, ANTES das validacoes (@Email, @NotBlank) rodarem
+    // por isso o trim tambem e feito aqui: sem ele, " ana@email.com " (com espaco, comum ao copiar e colar)
+    // seria barrado pelo @Email com erro 400 e nem chegaria na normalizacao do dominio
+    // o resto da normalizacao (deixar tudo em minusculo) fica no Usuario do dominio
     public void setEmail(String email) {
         if (email == null) {
             this.email = null;

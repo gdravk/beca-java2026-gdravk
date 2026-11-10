@@ -5,11 +5,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-// ajuda os controllers com a regra do pedido 6: "o usuario so ve e cria as proprias transacoes"
+// ajuda os controllers com a regra do pedido 6: "cada usuario so ve e cria as proprias transacoes"
 //
 // as rotas continuam aceitando o usuarioId (na url ou no corpo), mas agora ele e opcional:
 // - nao veio: usa o id de quem esta logado
-// - veio igual ao logado: segue normal
+// - veio igual ao de quem esta logado: segue normal
 // - veio diferente: 403, porque e uma tentativa de mexer nos dados de outro usuario
 @Component
 public class UsuarioLogado {

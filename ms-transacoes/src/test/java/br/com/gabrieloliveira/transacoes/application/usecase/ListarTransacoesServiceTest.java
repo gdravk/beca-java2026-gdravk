@@ -49,8 +49,8 @@ class ListarTransacoesServiceTest {
 
     @Test
     void oDiaFinalEntraInteiroNaConsulta() {
-        // dado: periodo de 01/11 a 05/11, so compras
-        // o repositorio trata o fim como exclusivo, entao tem que receber 06/11 00:00 para o dia 05 vir completo
+        // dado: o periodo de 01/11 a 05/11, so com compras
+        // como o repositorio trata o fim como exclusivo, ele tem que receber 06/11 00:00 para o dia 05 vir completo
         List<Transacao> doBanco = List.of();
         when(transacaoRepositoryPort.listarPorUsuario(1L, LocalDateTime.of(2026, 11, 1, 0, 0),
                 LocalDateTime.of(2026, 11, 6, 0, 0), TipoTransacao.COMPRA)).thenReturn(doBanco);

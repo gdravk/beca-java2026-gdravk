@@ -10,19 +10,19 @@ import org.springframework.security.core.Authentication;
 
 import java.util.List;
 
-// a "ponte" entre o spring security e o nosso caso de uso de verificar credenciais
+// a "ponte" entre o spring security e o nosso caso de uso que confere email e senha
 //
 // como funciona a autenticacao basica:
 // - o cliente manda o cabecalho "Authorization: Basic xxx", onde xxx e "email:senha" em base64
 // - o filtro do spring security le esse cabecalho e chama o metodo authenticate abaixo
-// - aqui chamamos o VerificarCredenciaisUseCase (o mesmo do POST /auth/verificar),
-//   assim a regra de login fica num lugar so
+// - aqui chamamos o VerificarCredenciaisUseCase (o mesmo do POST /auth/verificar), entao a regra
+//   de login fica num lugar so
 // - deu certo: devolvemos um "Authentication" com o UsuarioAutenticado dentro
 // - deu errado: lancamos BadCredentialsException, e o spring responde 401
 //
-// nao tem @Component de proposito (ajuste da revisao do professor): quem cria essa classe com new
-// e o SecurityConfig; como bean, o spring registrava o provider duas vezes e, com a senha errada,
-// conferia o bcrypt duas vezes na mesma requisicao
+// nao tem @Component de proposito (ajuste da revisao do professor): quem cria esta classe com new e o
+// SecurityConfig. como bean, o spring registrava o provider duas vezes e, com a senha errada, rodava o
+// bcrypt duas vezes na mesma requisicao
 public class CredenciaisAuthenticationProvider implements AuthenticationProvider {
 
     private final VerificarCredenciaisUseCase verificarCredenciaisUseCase;
@@ -33,7 +33,7 @@ public class CredenciaisAuthenticationProvider implements AuthenticationProvider
 
     @Override
     public Authentication authenticate(Authentication autenticacao) {
-        // getName() e o usuario digitado (pra nos, o email); getCredentials() e a senha
+        // getName() e o usuario digitado (para nos, o email); getCredentials() e a senha
         String email = autenticacao.getName();
         String senha = null;
         if (autenticacao.getCredentials() != null) {

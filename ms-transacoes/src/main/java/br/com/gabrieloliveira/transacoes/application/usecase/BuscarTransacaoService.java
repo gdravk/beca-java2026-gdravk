@@ -21,10 +21,10 @@ public class BuscarTransacaoService implements BuscarTransacaoUseCase {
         Transacao transacao = transacaoRepositoryPort.buscarPorId(id)
                 .orElseThrow(() -> naoEncontrada(id));
 
-        // seguranca (pedido 6, ajuste da revisao do professor):
-        // a transacao de outro usuario responde 404, igual a uma que nao existe
-        // (um 403 contaria pra quem esta tentando que aquele id existe e e de outra pessoa)
-        // essa conferencia vem ANTES do cambio, pra nao chamar a brasilapi por uma transacao que nem vai ser mostrada
+        // seguranca (pedido 6, ajuste da revisao do professor): a transacao de outro usuario responde 404,
+        // igual a uma que nao existe (um 403 contaria para quem esta tentando que aquele id existe e e de
+        // outra pessoa)
+        // essa conferencia vem ANTES do cambio, para nao chamar a brasilapi por uma transacao que nem vai ser mostrada
         if (!transacao.getUsuarioId().equals(usuarioSolicitanteId)) {
             throw naoEncontrada(id);
         }
@@ -35,7 +35,7 @@ public class BuscarTransacaoService implements BuscarTransacaoUseCase {
         return transacao;
     }
 
-    // a mesma mensagem pros dois casos (nao existe / e de outro usuario)
+    // a mesma mensagem para os dois casos (nao existe / e de outro usuario)
     private RecursoNaoEncontradoException naoEncontrada(Long id) {
         return new RecursoNaoEncontradoException("transacao com id " + id + " nao encontrada");
     }

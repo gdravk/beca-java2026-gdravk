@@ -5,10 +5,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 
-// o que a listagem (GET /users) mostra de cada usuario
-// e uma versao "resumida" do UsuarioResponseDTO: sem o cpf, porque a listagem mostra todo mundo
-// pra qualquer usuario logado, e cpf e dado pessoal (ajuste da revisao do professor)
-// o cpf completo so aparece pro proprio usuario, no GET /users/{id} e nas respostas de cadastro e update
+// o que a listagem (GET /users) mostra de cada usuario: uma versao resumida do UsuarioResponseDTO, sem o cpf
+// como a listagem mostra todo mundo para qualquer usuario logado, o cpf (dado pessoal) fica de fora
+// (ajuste pedido pelo professor). ele so aparece para o proprio usuario, no GET /users/{id} e nas
+// respostas do cadastro e da atualizacao
 @JsonPropertyOrder({"id", "nome", "email", "dataCriacao"})
 @Schema(description = "usuario na listagem: sem cpf e sem senha")
 public class UsuarioResumoResponseDTO {

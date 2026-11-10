@@ -11,8 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 // teste simples, sem spring: so chama o isValid direto
 class SenhaCabeNoBcryptValidatorTest {
 
-    // "ç" e o c com cedilha escrito de um jeito que nao depende da codificacao do arquivo
-    // em utf-8 ele ocupa 2 bytes
+    // o c com cedilha; como o arquivo e salvo em utf-8, cada "ç" ocupa 2 bytes
     private static final String C_CEDILHA = "ç";
 
     private final SenhaCabeNoBcryptValidator validador = new SenhaCabeNoBcryptValidator();
@@ -42,7 +41,7 @@ class SenhaCabeNoBcryptValidatorTest {
 
     @Test
     void oBcryptDeVerdadeAceita72BytesERecusaMaisQueIsso() {
-        // mostra o motivo da anotacao existir: o proprio bcrypt lanca excecao acima de 72 bytes
+        // mostra por que a anotacao existe: o proprio bcrypt lanca excecao acima de 72 bytes
         BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder(4);
         assertDoesNotThrow(() -> bcrypt.encode("a".repeat(72)));
         assertThrows(IllegalArgumentException.class, () -> bcrypt.encode(C_CEDILHA.repeat(37)));

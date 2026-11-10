@@ -10,7 +10,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-// resumo do relatorio csv (pedido 7)
+// resumo do relatorio em csv (pedido 7)
 class RelatorioTransacoesTest {
 
     private static final Periodo NOVEMBRO =
@@ -18,7 +18,7 @@ class RelatorioTransacoesTest {
 
     @Test
     void somaDepositosESaidasAprovadasEContaAsRejeitadas() {
-        // dado: deposito 1000, compra 150,75, retirada 49,25 (aprovados) e uma compra rejeitada de 5000
+        // dado: deposito de 1000, compra de 150,75 e retirada de 49,25 (aprovados), e uma compra rejeitada de 5000
         Transacao rejeitada = transacao(TipoTransacao.COMPRA, "5000.00");
         rejeitada.rejeitar("saldo insuficiente");
         List<Transacao> transacoes = List.of(
@@ -30,7 +30,7 @@ class RelatorioTransacoesTest {
         // quando
         RelatorioTransacoes relatorio = RelatorioTransacoes.montar(1L, NOVEMBRO, transacoes);
 
-        // entao: a rejeitada aparece na lista, mas nao entra no dinheiro
+        // entao: a rejeitada aparece na lista, mas nao entra nos totais em dinheiro
         assertEquals(4, relatorio.getTransacoes().size());
         assertEquals(3, relatorio.getQuantidadeAprovadas());
         assertEquals(1, relatorio.getQuantidadeRejeitadas());

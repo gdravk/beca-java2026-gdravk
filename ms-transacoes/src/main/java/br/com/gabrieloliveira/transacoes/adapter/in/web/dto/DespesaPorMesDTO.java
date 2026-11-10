@@ -5,8 +5,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.math.BigDecimal;
 
-// uma linha do resumo por mes no json
-// ex: { "mes": "2026-11", "quantidade": 7, "total": 420.00 }
+// uma linha do resumo por mes, como aparece no json:
+// { "mes": "2026-11", "quantidade": 7, "total": 420.00 }
 // o mes vai como texto "ano-mes" (o mapper usa o toString do YearMonth, que ja sai nesse formato)
 @JsonPropertyOrder({"mes", "quantidade", "total"})
 @Schema(description = "total de um mes")

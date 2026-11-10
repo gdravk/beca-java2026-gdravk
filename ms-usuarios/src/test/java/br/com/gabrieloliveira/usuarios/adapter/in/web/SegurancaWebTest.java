@@ -43,9 +43,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 // testes web da seguranca do ms1: fazem requisicoes http "de mentira" e conferem o status da resposta
 //
-// @WebMvcTest sobe so a camada web (controllers, GlobalExceptionHandler e o spring security), sem banco
-// @Import traz a nossa configuracao de seguranca e as pecas que ela usa
-// @MockitoBean troca os casos de uso por mocks: cada teste diz o que eles respondem
+// o @WebMvcTest sobe so a camada web (controllers, GlobalExceptionHandler e spring security), sem banco
+// o @Import traz a nossa configuracao de seguranca e as pecas que ela usa
+// o @MockitoBean troca os casos de uso por mocks, e cada teste diz o que eles respondem
 // o MockMvc e quem faz as requisicoes, sem precisar subir um servidor de verdade
 @WebMvcTest(controllers = {UsuarioController.class, AuthController.class, ImportacaoUsuariosController.class})
 @Import({SecurityConfig.class, ErroDeSegurancaHandler.class, UsuarioWebMapper.class, VerificadorDeChaveInterna.class})
@@ -92,7 +92,7 @@ class SegurancaWebTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.mensagem").value("email ou senha invalidos"));
 
-        // o provider existe uma vez so: com a senha errada, o bcrypt nao e conferido duas vezes
+        // o provider existe uma vez so: com a senha errada, o bcrypt nao roda duas vezes
         verify(verificarCredenciaisUseCase, times(1)).verificar(EMAIL, "errada");
     }
 

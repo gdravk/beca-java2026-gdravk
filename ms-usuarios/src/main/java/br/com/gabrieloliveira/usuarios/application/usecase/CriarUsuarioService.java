@@ -10,15 +10,15 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 
 // implementa o caso de uso de criar usuario
-// repara que nao tem nenhuma anotacao do spring aqui (@Service, @Autowired...)
-// quem cria esse objeto e entrega as portas pra ele e o BeanConfig, la no pacote config
+// repara que nao existe nenhuma anotacao do spring aqui (@Service, @Autowired...): quem cria este objeto
+// e entrega as portas para ele e o BeanConfig, la no pacote config
 public class CriarUsuarioService implements CriarUsuarioUseCase {
 
     private final UsuarioRepositoryPort usuarioRepositoryPort;
     private final SenhaEncoderPort senhaEncoderPort;
 
-    // relogio no fuso de brasilia (bean do BeanConfig), o mesmo cuidado do ms2:
-    // num container em utc, um cadastro feito as 22h no brasil ficaria com a data do dia seguinte
+    // relogio no fuso de brasilia (bean do BeanConfig), o mesmo cuidado do ms2: num container em utc,
+    // um cadastro feito as 22h no brasil ficaria com a data do dia seguinte
     private final Clock relogio;
 
     public CriarUsuarioService(UsuarioRepositoryPort usuarioRepositoryPort, SenhaEncoderPort senhaEncoderPort,
@@ -30,7 +30,7 @@ public class CriarUsuarioService implements CriarUsuarioUseCase {
 
     @Override
     public Usuario criar(Usuario novoUsuario) {
-        // primeiro conferimos as regras, so depois mexemos no banco
+        // primeiro conferimos as regras; so depois mexemos no banco
         if (usuarioRepositoryPort.existePorEmail(novoUsuario.getEmail())) {
             throw new RegraNegocioException("ja existe um usuario cadastrado com esse email");
         }
@@ -38,9 +38,9 @@ public class CriarUsuarioService implements CriarUsuarioUseCase {
             throw new RegraNegocioException("ja existe um usuario cadastrado com esse cpf");
         }
 
-        // a senha nunca vai pro banco do jeito que veio, so o hash dela
+        // a senha nunca vai para o banco do jeito que veio, so o hash dela
         novoUsuario.setSenha(senhaEncoderPort.codificar(novoUsuario.getSenha()));
-        // a data de criacao e decidida aqui, no momento do cadastro
+        // a data de criacao e definida aqui, no momento do cadastro
         novoUsuario.setDataCriacao(LocalDateTime.now(relogio));
 
         return usuarioRepositoryPort.salvar(novoUsuario);

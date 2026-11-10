@@ -6,8 +6,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Map;
 
-// formato padrao de todo erro que a api devolve
-// assim quem chama a api sempre recebe o mesmo json, seja 400, 404 ou 409
+// formato padrao de todos os erros da api: quem chama a api recebe sempre o mesmo json, seja 400, 404 ou 409
 @Schema(description = "formato padrao de todos os erros da api")
 public class ErroResponseDTO {
 
@@ -24,12 +23,11 @@ public class ErroResponseDTO {
     @Schema(description = "rota chamada", example = "/users")
     private String caminho;
 
-    // so vem preenchido nos erros de validacao (400), com "campo -> o que esta errado"
-    // nos outros erros fica null
+    // so vem preenchido nos erros de validacao (400), no formato "campo -> o que esta errado"
     @Schema(description = "so nos erros de validacao (400): cada campo errado e a mensagem dele; nos outros erros nao aparece",
             example = "{\"email\": \"o email esta em formato invalido\"}")
-    // NON_NULL: quando nao ha campos (todo erro que nao e de validacao), o "campos" nem aparece no json
-    // sem isso a resposta sairia com "campos": null
+    // NON_NULL: quando nao ha campos (todo erro que nao e de validacao), o "campos" nem aparece no json;
+    // sem isso a resposta sairia com um "campos": null sobrando
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Map<String, String> campos;
 
@@ -37,7 +35,7 @@ public class ErroResponseDTO {
     }
 
     public ErroResponseDTO(int status, String erro, String mensagem, String caminho, Map<String, String> campos) {
-        // horario de brasilia, igual ao resto da api (em container utc, o now() sozinho daria o horario de londres)
+        // horario de brasilia, igual ao resto da api (num container em utc, o now() sozinho daria o horario de londres)
         this.dataHora = LocalDateTime.now(FUSO_BRASIL);
         this.status = status;
         this.erro = erro;

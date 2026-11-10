@@ -3,8 +3,8 @@ package br.com.gabrieloliveira.usuarios.adapter.in.web.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
-// o que a api devolve pro cliente
-// repara que aqui nao tem o campo senha: assim nao tem como ela vazar numa resposta
+// o que a api devolve sobre um usuario
+// repara que nao existe campo senha aqui: assim nao tem como ela vazar numa resposta
 @Schema(description = "dados completos de um usuario (a senha nunca aparece)")
 public class UsuarioResponseDTO {
 

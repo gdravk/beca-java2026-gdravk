@@ -23,20 +23,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 
-// endpoints da analise de despesas (pedido 5 do PO)
-// tres rotas, uma pra cada resumo:
+// rotas da analise de despesas (pedido 5 do PO), uma para cada resumo:
 //   GET /transactions/analysis/category?inicio=2026-11-01&fim=2026-11-30
 //   GET /transactions/analysis/daily
 //   GET /transactions/analysis/monthly?inicio=2026-01-01&fim=2026-12-31
 // inicio e fim sao opcionais (formato aaaa-mm-dd); sem eles, a analise e do mes atual
-// a analise e sempre do usuario logado; o usuarioId e opcional e, se vier, tem que ser o dele (senao 403)
+// a analise e sempre do usuario logado: o usuarioId e opcional e, se vier, tem que ser o dele (senao 403)
 @RestController
 @RequestMapping("/transactions/analysis")
-// os ids da url e do filtro sao validados direto no parametro (fase 13): zero ou negativo responde 400
-// o spring mvc faz essa validacao sozinho (sem @Validated), igual no ms1
+// os ids da url e do filtro sao validados direto no parametro: zero ou negativo responde 400
+// (o spring mvc faz essa validacao sozinho, sem @Validated, igual no ms1)
 //
-// swagger (fase 15): as tres rotas recebem os mesmos parametros e podem dar os mesmos erros
-// despesa = saida aprovada (RETIRADA, TRANSFERENCIA, COMPRA) que nao e estorno e nao foi estornada
+// no swagger, as tres rotas recebem os mesmos parametros e podem dar os mesmos erros
+// despesa = saida aprovada (RETIRADA, TRANSFERENCIA ou COMPRA) que nao e um estorno e nao foi estornada
 @Tag(name = "Analise de despesas", description = "quanto o usuario logado gastou, por categoria, por dia e por mes")
 public class AnaliseDespesasController {
 
@@ -54,7 +53,7 @@ public class AnaliseDespesasController {
         this.usuarioLogado = usuarioLogado;
     }
 
-    // total de cada categoria e o total geral, da categoria que mais gastou pra que menos gastou
+    // total de cada categoria e o total geral, da categoria em que mais gastou para a que menos gastou
     @Operation(summary = "Despesas por categoria",
             description = "Total e percentual de cada categoria, da que mais gastou para a que menos gastou. "
                     + "Sem datas, usa o mes atual.")
@@ -84,7 +83,7 @@ public class AnaliseDespesasController {
                 analisarDespesasUseCase.porCategoria(dono, inicio, fim)));
     }
 
-    // total gasto em cada dia do periodo (so os dias com despesa)
+    // total gasto em cada dia do periodo (so aparecem os dias com despesa)
     @Operation(summary = "Despesas por dia",
             description = "Total gasto em cada dia do periodo (so os dias com despesa). Sem datas, usa o mes atual.")
     @ApiResponses({
@@ -113,7 +112,7 @@ public class AnaliseDespesasController {
                 analisarDespesasUseCase.porDia(dono, inicio, fim)));
     }
 
-    // total gasto em cada mes do periodo (so os meses com despesa)
+    // total gasto em cada mes do periodo (so aparecem os meses com despesa)
     @Operation(summary = "Despesas por mes",
             description = "Total gasto em cada mes do periodo (so os meses com despesa). Sem datas, usa o mes atual.")
     @ApiResponses({

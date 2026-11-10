@@ -13,8 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-// implementacao da TransacaoRepositoryPort com jpa e postgres
-// recebe e devolve Transacao do dominio; TransacaoEntity nao sai deste pacote
+// implementa a TransacaoRepositoryPort com jpa e postgres
+// recebe e devolve a Transacao do dominio; a TransacaoEntity nunca sai deste pacote
 @Component
 public class TransacaoPersistenceAdapter implements TransacaoRepositoryPort {
 

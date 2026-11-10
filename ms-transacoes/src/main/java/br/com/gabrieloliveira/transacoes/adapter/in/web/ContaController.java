@@ -22,12 +22,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.Clock;
 import java.time.LocalDateTime;
 
-// endpoints da conta do usuario (saldo e limites)
+// rotas da conta do usuario (saldo e limites)
 // fica separado do TransacaoController porque e outro recurso da api: /accounts, e nao /transactions
 @RestController
 @RequestMapping("/accounts")
-// os ids da url e do filtro sao validados direto no parametro (fase 13): zero ou negativo responde 400
-// o spring mvc faz essa validacao sozinho (sem @Validated), igual no ms1
+// os ids da url sao validados direto no parametro: zero ou negativo responde 400
+// (o spring mvc faz essa validacao sozinho, sem @Validated, igual no ms1)
 @Tag(name = "Conta", description = "saldo e limites do usuario logado, lidos da API Mock")
 public class ContaController {
 
@@ -35,7 +35,7 @@ public class ContaController {
 
     private final ConsultarSaldoUseCase consultarSaldoUseCase;
     private final UsuarioLogado usuarioLogado;
-    // relogio no fuso de brasilia, pra o "consultadoEm" da resposta sair no horario certo
+    // relogio no fuso de brasilia, para o "consultadoEm" da resposta sair no horario certo
     private final Clock relogio;
 
     public ContaController(ConsultarSaldoUseCase consultarSaldoUseCase, UsuarioLogado usuarioLogado, Clock relogio) {
@@ -44,9 +44,9 @@ public class ContaController {
         this.relogio = relogio;
     }
 
-    // GET /accounts/{usuarioId}/balance -> 200 com saldo e limites lidos agora da api mock
-    // 404 se o usuario nao tiver conta, 503 se a api mock estiver fora do ar
-    // 403 se o usuarioId da url nao for o do usuario logado (ninguem ve o saldo de outra pessoa)
+    // GET /accounts/{usuarioId}/balance: 200 com o saldo e os limites lidos agora mesmo da api mock
+    // 404 se o usuario nao tiver conta la, 503 se a api mock estiver fora do ar
+    // 403 se o usuarioId da url nao for o de quem esta logado (ninguem ve o saldo de outra pessoa)
     @Operation(summary = "Consulta o saldo e os limites da propria conta",
             description = "Os valores vem na hora da API Mock (nao ficam guardados no ms2).")
     @ApiResponses({

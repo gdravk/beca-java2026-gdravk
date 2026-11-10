@@ -41,17 +41,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-// essa classe fica "escutando" os erros que escapam dos controllers
-// cada metodo com @ExceptionHandler cuida de um tipo de erro e monta a resposta json certinha
-// sem ela, o cliente receberia um erro 500 generico e feio
-// ela fica no adaptador web porque transformar erro em status http e coisa do mundo http
+// esta classe "escuta" os erros que escapam dos controllers e transforma cada um numa resposta json
+// caprichada: cada metodo com @ExceptionHandler cuida de um tipo de erro
+// sem ela, quem chamasse a api receberia um erro 500 generico e sem explicacao
+// ela mora no adaptador web porque traduzir erro em status http e assunto do mundo http, e nao do dominio
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // log para os erros inesperados (o 500): o cliente recebe uma mensagem generica e os detalhes ficam aqui
+    // log dos erros inesperados (500): o cliente recebe uma mensagem generica e os detalhes ficam guardados aqui
     private static final Logger LOG = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    // 404: o usuario (ou outra coisa) nao foi encontrado
+    // 404: o usuario (ou outro recurso) nao foi encontrado
     @ExceptionHandler(RecursoNaoEncontradoException.class)
     public ResponseEntity<ErroResponseDTO> tratarNaoEncontrado(RecursoNaoEncontradoException ex,
                                                               HttpServletRequest request) {
@@ -65,11 +65,11 @@ public class GlobalExceptionHandler {
         return montarResposta(HttpStatus.UNAUTHORIZED, ex.getMessage(), request, null);
     }
 
-    // 401: a seguranca barrou uma rota protegida (chega aqui pelo ErroDeSegurancaHandler)
-    // - BadCredentialsException: mandou email e senha, mas estao errados
-    // - outras (ex: InsufficientAuthenticationException): nao mandou login nenhum
-    // o cabecalho WWW-Authenticate avisa o cliente que a rota espera autenticacao basica
-    // (o navegador, por exemplo, abre a janelinha de usuario e senha quando ve esse cabecalho)
+    // 401: o spring security barrou uma rota protegida (o erro chega aqui pelo ErroDeSegurancaHandler)
+    // - BadCredentialsException: a pessoa mandou email e senha, mas eles estao errados
+    // - qualquer outra (InsufficientAuthenticationException, por exemplo): nao mandou login nenhum
+    // o cabecalho WWW-Authenticate avisa que a rota espera autenticacao basica; e por causa dele que
+    // o navegador abre aquela janelinha pedindo usuario e senha
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErroResponseDTO> tratarNaoAutenticado(AuthenticationException ex,
                                                                HttpServletRequest request) {
@@ -79,26 +79,28 @@ public class GlobalExceptionHandler {
         }
         ErroResponseDTO corpo = new ErroResponseDTO(HttpStatus.UNAUTHORIZED.value(),
                 HttpStatus.UNAUTHORIZED.getReasonPhrase(), mensagem, request.getRequestURI(), null);
+        // o contentType(JSON) e explicito pelo mesmo motivo explicado no montarResposta (o 401 nao passa por ele)
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.WWW_AUTHENTICATE, "Basic realm=\"ms-usuarios\"")
                 .body(corpo);
     }
 
-    // 403: chamaram o POST /auth/verificar sem a chave interna (so o ms2 pode usar essa rota)
+    // 403: chamaram o POST /auth/verificar sem a chave interna (essa rota e so para o ms2)
     @ExceptionHandler(ChaveInternaInvalidaException.class)
     public ResponseEntity<ErroResponseDTO> tratarChaveInternaInvalida(ChaveInternaInvalidaException ex,
                                                                      HttpServletRequest request) {
         return montarResposta(HttpStatus.FORBIDDEN, ex.getMessage(), request, null);
     }
 
-    // 403: o usuario esta logado, mas tentou mexer nos dados de outro usuario
+    // 403: a pessoa esta logada, mas tentou mexer nos dados de outro usuario
     @ExceptionHandler(AcessoNegadoException.class)
     public ResponseEntity<ErroResponseDTO> tratarAcessoNegado(AcessoNegadoException ex,
                                                              HttpServletRequest request) {
         return montarResposta(HttpStatus.FORBIDDEN, ex.getMessage(), request, null);
     }
 
-    // 403 vindo do proprio spring security (chega aqui pelo ErroDeSegurancaHandler)
+    // 403 vindo do proprio spring security (tambem chega aqui pelo ErroDeSegurancaHandler)
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErroResponseDTO> tratarAcessoNegadoPelaSeguranca(AccessDeniedException ex,
                                                                           HttpServletRequest request) {
@@ -106,16 +108,16 @@ public class GlobalExceptionHandler {
                 request, null);
     }
 
-    // 409: quebrou uma regra, tipo email ou cpf repetido
+    // 409: alguma regra foi quebrada, como cadastrar um email ou cpf que ja existe
     @ExceptionHandler(RegraNegocioException.class)
     public ResponseEntity<ErroResponseDTO> tratarRegraNegocio(RegraNegocioException ex,
                                                              HttpServletRequest request) {
         return montarResposta(HttpStatus.CONFLICT, ex.getMessage(), request, null);
     }
 
-    // 409 tambem: rede de seguranca pro caso raro de duas requisicoes cadastrarem o mesmo email
-    // ao mesmo tempo e as duas passarem pela conferencia do caso de uso
-    // ai quem barra e o unique do banco, e a gente devolve 409 em vez de 500
+    // 409 tambem: rede de seguranca para o caso raro de duas requisicoes cadastrarem o mesmo email no mesmo
+    // instante e as duas passarem pela conferencia do caso de uso. nessa hora quem barra e o "unique" do banco,
+    // e devolvemos 409 em vez de deixar virar um erro 500
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErroResponseDTO> tratarDadoDuplicadoNoBanco(DataIntegrityViolationException ex,
                                                                      HttpServletRequest request) {
@@ -123,8 +125,8 @@ public class GlobalExceptionHandler {
                 request, null);
     }
 
-    // 400: alguma validacao do UsuarioRequestDTO falhou (@NotBlank, @Email...)
-    // aqui juntamos todos os campos errados de uma vez, pra pessoa corrigir tudo numa tacada so
+    // 400: alguma validacao do corpo falhou (@NotBlank, @Email...)
+    // juntamos todos os campos errados de uma vez, para a pessoa corrigir tudo numa tacada so
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErroResponseDTO> tratarValidacao(MethodArgumentNotValidException ex,
                                                           HttpServletRequest request) {
@@ -136,10 +138,10 @@ public class GlobalExceptionHandler {
                 erros.paraResposta());
     }
 
-    // 400: a validacao dos parametros da url falhou (fase 13), ex: GET /users?tamanho=0 ou GET /users/-5
-    // o spring junta os erros por parametro; cada um vira uma linha em "campos", igual aos erros do corpo
-    // quando o metodo tem parametro validado E corpo com @Valid (como o PUT), os erros do corpo tambem chegam aqui,
-    // dentro de um ParameterErrors, e por isso pegamos os campos dele um por um
+    // 400: a validacao dos parametros da url falhou, como em GET /users?tamanho=0 ou GET /users/-5
+    // o spring agrupa os erros por parametro, e cada um vira uma linha em "campos", igual aos erros do corpo
+    // quando o metodo tem parametro validado E corpo com @Valid (caso do PUT), os erros do corpo tambem chegam
+    // por aqui, dentro de um ParameterErrors; por isso pegamos os campos dele um por um
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<ErroResponseDTO> tratarValidacaoDosParametros(HandlerMethodValidationException ex,
                                                                        HttpServletRequest request) {
@@ -160,20 +162,19 @@ public class GlobalExceptionHandler {
                 erros.paraResposta());
     }
 
-    // 400: o json veio quebrado (faltou uma virgula, aspas, chave...)
-    // ou um campo veio com o tipo de dado errado (ex: "nome": {"a": 1}); nesse caso dizemos qual campo foi
-    // (o mesmo tratamento do ms2, pra os dois servicos responderem igual)
+    // 400: o json chegou quebrado (faltou virgula, aspas, chave...) ou algum campo veio com o tipo errado,
+    // como "nome": {"a": 1}. no segundo caso dizemos qual foi o campo, do mesmo jeito que o ms2 faz,
+    // para os dois servicos responderem igual
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErroResponseDTO> tratarJsonInvalido(HttpMessageNotReadableException ex,
                                                              HttpServletRequest request) {
         if (ex.getCause() instanceof MismatchedInputException erroDoCampo && !erroDoCampo.getPath().isEmpty()) {
-            // o "path" e o caminho ate o campo; o ultimo pedaco e o nome do campo (ex: "nome")
+            // o "path" e o caminho ate o campo com problema; o ultimo pedaco dele e o nome do campo (ex: "nome")
             List<JacksonException.Reference> caminho = erroDoCampo.getPath();
             String campo = caminho.get(caminho.size() - 1).getPropertyName();
-            // quando o erro e num item de lista (ex: o corpo inteiro veio como [ ... ]), o ultimo pedaco do
-            // caminho e uma posicao (0, 1...) e nao um nome: o getPropertyName volta null
-            // uma chave null quebra o json da resposta, entao nesse caso o erro fica no "corpo"
-            // (ajuste da revisao do professor 06/11)
+            // se o erro estiver num item de lista (o corpo inteiro mandado como [ ... ], por exemplo), o ultimo pedaco
+            // do caminho e uma posicao (0, 1...) e nao um nome, e o getPropertyName volta null. uma chave null quebraria
+            // o json da resposta, entao nesse caso o erro fica no "corpo" (pedido do professor na revisao de 06/11)
             if (campo == null) {
                 campo = "corpo";
             }
@@ -184,7 +185,7 @@ public class GlobalExceptionHandler {
         return montarResposta(HttpStatus.BAD_REQUEST, "o corpo da requisicao esta mal formatado", request, null);
     }
 
-    // 400: mandaram um texto onde era pra ser numero, tipo GET /users/abc ou ?pagina=abc
+    // 400: veio texto onde era para vir numero, como GET /users/abc ou ?pagina=abc
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErroResponseDTO> tratarTipoInvalido(MethodArgumentTypeMismatchException ex,
                                                              HttpServletRequest request) {
@@ -193,7 +194,7 @@ public class GlobalExceptionHandler {
     }
 
     // 400: problema no arquivo inteiro da importacao (vazio, nao e .csv, cabecalho errado, nao e utf-8...)
-    // lembrando: erro de uma linha so nao cai aqui, ele aparece no resumo da importacao
+    // o erro de uma linha so nao cai aqui: ele aparece no resumo da importacao, junto com as outras linhas
     @ExceptionHandler(ArquivoCsvInvalidoException.class)
     public ResponseEntity<ErroResponseDTO> tratarArquivoInvalido(ArquivoCsvInvalidoException ex,
                                                                 HttpServletRequest request) {
@@ -208,15 +209,15 @@ public class GlobalExceptionHandler {
         return montarResposta(HttpStatus.BAD_REQUEST, mensagem, request, null);
     }
 
-    // 413: o arquivo passou do tamanho maximo configurado no application.properties (spring.servlet.multipart)
+    // 413: o arquivo passou do tamanho maximo (spring.servlet.multipart, no application.properties)
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ErroResponseDTO> tratarArquivoGrandeDemais(MaxUploadSizeExceededException ex,
                                                                     HttpServletRequest request) {
         return montarResposta(HttpStatus.CONTENT_TOO_LARGE, "o arquivo pode ter no maximo 2MB", request, null);
     }
 
-    // 415: mandaram um formato que a rota nao aceita
-    // ex: json no /users/import (que espera form-data) ou form-data no POST /users (que espera json)
+    // 415: mandaram um formato que a rota nao aceita, como json no /users/import (que espera form-data)
+    // ou form-data no POST /users (que espera json)
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public ResponseEntity<ErroResponseDTO> tratarFormatoNaoSuportado(HttpMediaTypeNotSupportedException ex,
                                                                     HttpServletRequest request) {
@@ -225,7 +226,7 @@ public class GlobalExceptionHandler {
         return montarResposta(HttpStatus.UNSUPPORTED_MEDIA_TYPE, mensagem, request, null);
     }
 
-    // 405: a rota existe, mas nao com esse metodo http (ex: PATCH /users/1, que so aceita GET, PUT e DELETE)
+    // 405: a rota existe, mas nao com esse metodo http (PATCH /users/1, por exemplo, que so aceita GET, PUT e DELETE)
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErroResponseDTO> tratarMetodoNaoAceito(HttpRequestMethodNotSupportedException ex,
                                                                 HttpServletRequest request) {
@@ -234,7 +235,7 @@ public class GlobalExceptionHandler {
         return montarResposta(HttpStatus.METHOD_NOT_ALLOWED, mensagem, request, null);
     }
 
-    // 404: a rota nao existe (ex: GET /usuarios em vez de /users)
+    // 404: a rota nem existe (GET /usuarios em vez de /users, por exemplo)
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ErroResponseDTO> tratarRotaInexistente(NoResourceFoundException ex,
                                                                 HttpServletRequest request) {
@@ -242,11 +243,11 @@ public class GlobalExceptionHandler {
                 request, null);
     }
 
-    // rede de seguranca: qualquer erro que nao caiu em nenhum handler acima
-    // sem isso, o spring responderia no formato padrao dele (diferente do nosso) e, com o devtools ligado,
-    // ainda mandaria o stack trace inteiro pro cliente, mostrando por dentro como o codigo funciona
-    // - se for um erro http conhecido do spring (ErrorResponse), mantemos o status que ele escolheu
-    // - se for um erro inesperado, respondemos 500 com uma mensagem generica e guardamos os detalhes so no log
+    // rede de seguranca: pega qualquer erro que nao caiu em nenhum dos metodos acima
+    // sem ela, o spring responderia no formato padrao dele (diferente do nosso) e, com o devtools ligado,
+    // ainda mandaria o stack trace inteiro para o cliente, mostrando como o codigo funciona por dentro
+    // - se for um erro http que o spring ja conhece (ErrorResponse), mantemos o status que ele escolheu
+    // - se for um erro inesperado de verdade, respondemos 500 com uma mensagem generica e os detalhes vao so para o log
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErroResponseDTO> tratarErroInesperado(Exception ex, HttpServletRequest request) {
         if (ex instanceof ErrorResponse erroHttp) {
@@ -259,7 +260,7 @@ public class GlobalExceptionHandler {
                 "ocorreu um erro inesperado, tente novamente mais tarde", request, null);
     }
 
-    // metodo de apoio pra nao repetir o mesmo codigo em todos os handlers acima
+    // metodo de apoio, para nao repetir a montagem da resposta em todos os metodos acima
     private ResponseEntity<ErroResponseDTO> montarResposta(HttpStatus status, String mensagem,
                                                            HttpServletRequest request, Map<String, String> campos) {
         ErroResponseDTO corpo = new ErroResponseDTO(
@@ -269,9 +270,9 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(),
                 campos
         );
-        // contentType(JSON) explicito: o erro sai em json mesmo quando o cliente pediu outro formato
-        // (ex: o download do relatorio pede "Accept: text/csv"); sem isso o spring tentaria escrever o erro
-        // em csv, nao conseguiria, e a resposta sairia sem corpo nenhum
+        // o contentType(JSON) explicito garante que o erro sai em json mesmo quando o cliente pediu outro formato
+        // (o download do relatorio, por exemplo, pede "Accept: text/csv"); sem ele o spring tentaria escrever
+        // o erro em csv, nao conseguiria, e a resposta sairia sem corpo nenhum
         return ResponseEntity.status(status).contentType(MediaType.APPLICATION_JSON).body(corpo);
     }
 }

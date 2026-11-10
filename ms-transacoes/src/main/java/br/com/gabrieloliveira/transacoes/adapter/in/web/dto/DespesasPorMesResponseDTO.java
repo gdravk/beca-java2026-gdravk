@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 // resposta do GET /transactions/analysis/monthly
-// "meses" so traz os meses que tiveram despesa, do mais antigo pro mais novo
+// "meses" so traz os meses que tiveram despesa, do mais antigo para o mais novo
 @JsonPropertyOrder({"usuarioId", "inicio", "fim", "quantidadeDespesas", "totalGeral", "meses"})
 @Schema(description = "despesas do periodo agrupadas por mes")
 public class DespesasPorMesResponseDTO {

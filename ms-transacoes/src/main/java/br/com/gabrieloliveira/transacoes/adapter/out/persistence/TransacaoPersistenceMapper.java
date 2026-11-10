@@ -3,7 +3,7 @@ package br.com.gabrieloliveira.transacoes.adapter.out.persistence;
 import br.com.gabrieloliveira.transacoes.domain.model.Transacao;
 import org.springframework.stereotype.Component;
 
-// converte entre a Transacao do dominio e a TransacaoEntity do banco, campo a campo
+// traduz entre a Transacao do dominio e a TransacaoEntity do banco, campo a campo
 @Component
 public class TransacaoPersistenceMapper {
 

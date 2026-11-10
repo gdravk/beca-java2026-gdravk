@@ -23,7 +23,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-// testes do estorno: as regras que ja existiam e a nova regra de seguranca (so o dono estorna)
+// testes do estorno: as regras de sempre e a regra de seguranca (so o dono estorna)
 @ExtendWith(MockitoExtension.class)
 class EstornarTransacaoServiceTest {
 
@@ -47,7 +47,7 @@ class EstornarTransacaoServiceTest {
     void donoEstornaUmaCompraEOEstornoViraDepositoLigadoAOriginal() {
         when(transacaoRepositoryPort.buscarPorId(10L)).thenReturn(Optional.of(compraAprovada()));
         when(transacaoRepositoryPort.existeEstornoAprovado(10L)).thenReturn(false);
-        // o criar de mentira so devolve o que recebeu, pra conferirmos como o estorno foi montado
+        // o criar de mentira so devolve o que recebeu, para conferirmos como o estorno foi montado
         when(criarTransacaoUseCase.criar(any(Transacao.class))).thenAnswer(chamada -> chamada.getArgument(0));
 
         Transacao estorno = service.estornar(10L, DONO);
@@ -83,8 +83,8 @@ class EstornarTransacaoServiceTest {
         rejeitada.rejeitar("saldo insuficiente");
         when(transacaoRepositoryPort.buscarPorId(10L)).thenReturn(Optional.of(rejeitada));
 
-        // confere a mensagem tambem: as tres regras lancam a mesma excecao,
-        // e sem a mensagem o teste passaria mesmo se fosse outra regra barrando
+        // confere tambem a mensagem: as tres regras lancam a mesma excecao, e sem a mensagem o teste
+        // passaria mesmo se fosse outra regra barrando
         RegraNegocioException erro = assertThrows(RegraNegocioException.class, () -> service.estornar(10L, DONO));
         assertEquals("so transacoes aprovadas podem ser estornadas", erro.getMessage());
         verify(criarTransacaoUseCase, never()).criar(any());
@@ -92,7 +92,7 @@ class EstornarTransacaoServiceTest {
 
     @Test
     void umEstornoNaoPodeSerEstornado() {
-        // dado: a transacao 10 e ela mesma um estorno (aponta para a transacao original 5)
+        // dado: a transacao 10 ja e um estorno (ela aponta para a transacao original 5)
         Transacao estorno = compraAprovada();
         estorno.setTipo(TipoTransacao.DEPOSITO);
         estorno.setTransacaoOriginalId(5L);

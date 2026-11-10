@@ -26,9 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 
-// relatorio de transacoes em csv para download (pedido 7 do PO)
+// relatorio de transacoes em csv, para baixar (pedido 7 do PO)
 //   GET /transactions/report?inicio=2026-11-01&fim=2026-11-30
-// o arquivo so traz transacoes do usuario logado; o usuarioId e opcional e, se vier, tem que ser o dele (senao 403)
+// o arquivo so traz transacoes de quem esta logado: o usuarioId e opcional e, se vier, tem que ser o dele (senao 403)
 // fica num controller separado porque devolve um arquivo, e nao json como as outras rotas de /transactions
 @RestController
 @RequestMapping("/transactions")
@@ -37,7 +37,7 @@ public class RelatorioController {
 
     private static final String ID_POSITIVO = "o id deve ser um numero positivo";
     private static final String NOME_DO_ARQUIVO = "relatorio-transacoes.csv";
-    // text/csv com charset utf-8: avisa o navegador (e o postman) do formato e da codificacao do arquivo
+    // text/csv com charset utf-8: avisa o navegador (e o postman) qual e o formato e a codificacao do arquivo
     private static final MediaType TEXT_CSV = new MediaType("text", "csv", StandardCharsets.UTF_8);
 
     private final GerarRelatorioUseCase gerarRelatorioUseCase;
@@ -52,8 +52,8 @@ public class RelatorioController {
         this.usuarioLogado = usuarioLogado;
     }
 
-    // o cabecalho Content-Disposition: attachment e o que faz o navegador BAIXAR o arquivo (em vez de mostrar
-    // o texto na tela) e da o nome dele; no swagger aparece o link "Download file"
+    // o cabecalho "Content-Disposition: attachment" e o que faz o navegador BAIXAR o arquivo, em vez de mostrar
+    // o texto na tela, e tambem da o nome dele; no swagger aparece o link "Download file"
     @Operation(summary = "Baixa o relatorio de transacoes em csv",
             description = "Arquivo UTF-8 separado por ponto e virgula, com numeros no formato brasileiro (150,75), "
                     + "pronto para abrir no Excel em portugues. Traz todas as transacoes do periodo (aprovadas e "

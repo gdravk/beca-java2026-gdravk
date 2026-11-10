@@ -5,10 +5,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
-// o resumo que o POST /users/import devolve
-// totalLinhas = linhas de usuario lidas (sem contar o cabecalho e as linhas em branco)
-// importados + rejeitados = totalLinhas
-// falhas = cada linha rejeitada, com o numero da linha no arquivo e o motivo
+// o resumo que o POST /users/import devolve:
+// - totalLinhas: linhas de usuario lidas (sem contar o cabecalho e as linhas em branco)
+// - importados + rejeitados = totalLinhas
+// - falhas: cada linha rejeitada, com o numero dela no arquivo e o motivo
 @JsonPropertyOrder({"totalLinhas", "importados", "rejeitados", "falhas"})
 @Schema(description = "resumo da importacao do csv")
 public class ImportacaoResultadoDTO {

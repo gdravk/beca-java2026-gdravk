@@ -4,7 +4,7 @@ import br.com.gabrieloliveira.usuarios.domain.model.Usuario;
 import org.springframework.stereotype.Component;
 
 // tradutor entre o Usuario do dominio e o UsuarioEntity do banco
-// os dois tem os mesmos campos, mas um e java puro e o outro tem as anotacoes do jpa
+// os dois tem os mesmos campos, mas um e java puro e o outro carrega as anotacoes do jpa
 @Component
 public class UsuarioPersistenceMapper {
 
