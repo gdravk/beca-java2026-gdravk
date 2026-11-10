@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 // adaptador de saida: e aqui que a porta UsuarioRepositoryPort "se pluga" no banco de verdade
-// ele recebe e devolve Usuario (dominio), e por dentro usa UsuarioEntity + UsuarioJpaRepository
-// se um dia trocar o postgres por outro banco, so essa parte (adapter.out.persistence) muda
+// ele recebe e devolve Usuario (dominio) e, por dentro, usa o UsuarioEntity e o UsuarioJpaRepository
+// se um dia o postgres for trocado por outro banco, so esta parte (adapter.out.persistence) muda
 @Component
 public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
 
@@ -36,7 +36,7 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
 
     @Override
     public Optional<Usuario> buscarPorId(Long id) {
-        // o map so roda se a caixinha tiver algo dentro; se estiver vazia, continua vazia
+        // o map so roda se a "caixinha" (Optional) tiver algo dentro; se ela estiver vazia, continua vazia
         return usuarioJpaRepository.findById(id)
                 .map(entity -> usuarioPersistenceMapper.paraDominio(entity));
     }
@@ -49,7 +49,7 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
 
     @Override
     public Pagina<Usuario> listar(int numeroPagina, int tamanhoPagina) {
-        // PageRequest diz pro banco qual pagina queremos, de que tamanho, e ordenado por id
+        // o PageRequest diz ao banco qual pagina queremos, de que tamanho, e ordenada por id
         PageRequest pedidoDePagina = PageRequest.of(numeroPagina, tamanhoPagina, Sort.by("id"));
         Page<UsuarioEntity> paginaDoBanco = usuarioJpaRepository.findAll(pedidoDePagina);
 
@@ -59,7 +59,7 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
             usuarios.add(usuarioPersistenceMapper.paraDominio(entity));
         }
 
-        // troca o Page do spring pela nossa Pagina, pra o spring nao "vazar" pro centro do sistema
+        // troca o Page do spring pela nossa Pagina, para o spring nao "vazar" para o centro do sistema
         return new Pagina<>(
                 usuarios,
                 paginaDoBanco.getNumber(),

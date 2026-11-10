@@ -24,8 +24,8 @@ public class AtualizarUsuarioService implements AtualizarUsuarioUseCase {
         Usuario usuario = usuarioRepositoryPort.buscarPorId(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("usuario com id " + id + " nao encontrado"));
 
-        // aqui conferimos so os OUTROS usuarios, senao o proprio usuario seria barrado
-        // ao salvar o email ou o cpf que ja sao dele
+        // aqui conferimos so os OUTROS usuarios; se nao fosse assim, o proprio usuario seria barrado
+        // ao salvar um email ou cpf que ja e dele
         if (usuarioRepositoryPort.existePorEmailEmOutroUsuario(dadosNovos.getEmail(), id)) {
             throw new RegraNegocioException("ja existe outro usuario cadastrado com esse email");
         }
@@ -33,16 +33,15 @@ public class AtualizarUsuarioService implements AtualizarUsuarioUseCase {
             throw new RegraNegocioException("ja existe outro usuario cadastrado com esse cpf");
         }
 
-        // copia os dados novos pro usuario que veio do banco
-        // o id e a data de criacao continuam os mesmos de antes
+        // copia os dados novos para o usuario que veio do banco; o id e a data de criacao continuam os mesmos
         usuario.setNome(dadosNovos.getNome());
         usuario.setEmail(dadosNovos.getEmail());
         usuario.setCpf(dadosNovos.getCpf());
 
-        // a senha e opcional no update:
-        // - veio senha nova -> gera o hash dela e troca
-        // - nao veio (null) -> nao mexe, o usuario continua com o hash que ja estava no banco
-        // antes a senha era obrigatoria e recriptografada em todo update, entao nem dava pra mudar so o nome
+        // a senha e opcional na atualizacao:
+        // - veio senha nova: gera o hash dela e troca
+        // - nao veio (null): nao mexe, e o usuario continua com o hash que ja estava no banco
+        // antes a senha era obrigatoria e criptografada de novo em toda atualizacao, entao nem dava para mudar so o nome
         if (dadosNovos.getSenha() != null) {
             usuario.setSenha(senhaEncoderPort.codificar(dadosNovos.getSenha()));
         }

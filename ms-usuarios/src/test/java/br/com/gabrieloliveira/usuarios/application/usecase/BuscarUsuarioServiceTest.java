@@ -33,7 +33,7 @@ class BuscarUsuarioServiceTest {
     @Test
     void deveDevolverOUsuarioQuandoEleExiste() {
         // dado: o banco de mentira encontra o usuario 1
-        // Optional.of(...) = a "caixinha" com o usuario dentro
+        // (Optional.of(...) = a "caixinha" com o usuario dentro)
         Usuario usuario = new Usuario();
         usuario.setId(1L);
         when(usuarioRepositoryPort.buscarPorId(1L)).thenReturn(Optional.of(usuario));
@@ -47,7 +47,7 @@ class BuscarUsuarioServiceTest {
 
     @Test
     void deveLancarRecursoNaoEncontradoQuandoOUsuarioNaoExiste() {
-        // dado: o banco de mentira nao encontra nada (Optional.empty() = caixinha vazia)
+        // dado: o banco de mentira nao encontra nada (Optional.empty() = a caixinha vazia)
         when(usuarioRepositoryPort.buscarPorId(99L)).thenReturn(Optional.empty());
 
         // quando / entao: lanca a excecao que vira 404 na api, com o id na mensagem

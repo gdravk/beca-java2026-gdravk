@@ -40,7 +40,7 @@ class AnalisadorDeDespesasTest {
         assertEquals(3, resumo.size());
         assertEquals(new BigDecimal("200.00"), analisador.somar(despesas));
 
-        // ordem: do maior total pro menor (LAZER 100, ALIMENTACAO 80, TRANSPORTE 20)
+        // a ordem e do maior total para o menor (LAZER 100, ALIMENTACAO 80, TRANSPORTE 20)
         assertEquals(Categoria.LAZER, resumo.get(0).getCategoria());
         assertEquals(new BigDecimal("100.00"), resumo.get(0).getTotal());
         assertEquals(2, resumo.get(0).getQuantidade());
@@ -85,7 +85,7 @@ class AnalisadorDeDespesasTest {
 
     @Test
     void estornoNaoEDespesaMesmoSendoUmaRetirada() {
-        // o estorno de um deposito vira uma RETIRADA, mas ele so corrige o deposito errado: nao e gasto
+        // o estorno de um deposito vira uma RETIRADA, mas ele so corrige o deposito errado: nao e um gasto
         Transacao estornoDeDeposito = transacao(TipoTransacao.RETIRADA, "100.00", Categoria.OUTROS, dia(3));
         estornoDeDeposito.setTransacaoOriginalId(10L);
 
@@ -94,7 +94,7 @@ class AnalisadorDeDespesasTest {
 
     @Test
     void resumoPorDiaSaiEmOrdemDeDataEJuntaAsDoMesmoDia() {
-        // mesmo dia em horarios diferentes, e fora de ordem na lista
+        // o mesmo dia em horarios diferentes, e fora de ordem na lista
         List<Transacao> despesas = List.of(
                 compra("15.00", Categoria.ALIMENTACAO, LocalDateTime.of(2026, 11, 4, 20, 30)),
                 compra("10.00", Categoria.ALIMENTACAO, LocalDateTime.of(2026, 11, 2, 9, 0)),
@@ -148,7 +148,7 @@ class AnalisadorDeDespesasTest {
 
     @Test
     void percentualComDizimaEArredondadoComDuasCasas() {
-        // 3 categorias com o mesmo valor: cada uma e 33.33% (e empatadas saem na ordem do enum)
+        // 3 categorias com o mesmo valor: cada uma e 33.33% (e as empatadas saem na ordem do enum)
         List<DespesaPorCategoria> resumo = analisador.agruparPorCategoria(List.of(
                 compra("10.00", Categoria.LAZER, dia(1)),
                 compra("10.00", Categoria.ALIMENTACAO, dia(1)),
@@ -160,7 +160,7 @@ class AnalisadorDeDespesasTest {
         assertEquals(Categoria.SAUDE, resumo.get(2).getCategoria());
     }
 
-    // metodos de apoio pra montar as transacoes dos testes
+    // metodos de apoio para montar as transacoes dos testes
 
     private Transacao compra(String valor, Categoria categoria, LocalDateTime dataHora) {
         return transacao(TipoTransacao.COMPRA, valor, categoria, dataHora);

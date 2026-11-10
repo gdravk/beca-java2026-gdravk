@@ -9,15 +9,14 @@ import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
 
-// essa classe vira a tabela "usuarios" no banco
-// cada atributo vira uma coluna, e cada objeto vira uma linha
-// ela existe so aqui no adaptador: o resto do sistema usa o Usuario do dominio
-// o UsuarioPersistenceMapper faz a traducao entre os dois
+// esta classe vira a tabela "usuarios" no banco: cada atributo e uma coluna, e cada objeto e uma linha
+// ela so existe aqui no adaptador; o resto do sistema usa o Usuario do dominio, e o
+// UsuarioPersistenceMapper faz a traducao entre os dois
 @Entity
 @Table(name = "usuarios")
 public class UsuarioEntity {
 
-    // chave primaria, quem gera o numero e o proprio postgres (1, 2, 3...)
+    // chave primaria; quem gera o numero e o proprio postgres (1, 2, 3...)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,15 +24,15 @@ public class UsuarioEntity {
     @Column(nullable = false, length = 100)
     private String nome;
 
-    // unique = true: o banco nao deixa ter dois usuarios com o mesmo email
+    // unique = true: o banco nao deixa existir dois usuarios com o mesmo email
     @Column(nullable = false, unique = true, length = 150)
     private String email;
 
-    // cpf so com os 11 numeros, sem ponto e sem traco
+    // cpf guardado so com os 11 numeros, sem ponto e sem traco
     @Column(nullable = false, unique = true, length = 11)
     private String cpf;
 
-    // guarda o hash da senha, nunca a senha pura
+    // aqui fica o hash da senha, nunca a senha pura
     @Column(nullable = false)
     private String senha;
 
@@ -41,7 +40,7 @@ public class UsuarioEntity {
     @Column(name = "data_criacao", nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 
-    // o jpa precisa de um construtor vazio pra conseguir montar o objeto quando le do banco
+    // o jpa precisa de um construtor vazio para conseguir montar o objeto quando le do banco
     public UsuarioEntity() {
     }
 

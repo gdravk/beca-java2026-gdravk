@@ -1,0 +1,11 @@
+# o que NAO vai pra dentro do docker na hora do build (deixa o build mais rapido e evita vazar segredo)
+target/
+.idea/
+*.iml
+.mvn/
+mvnw
+mvnw.cmd
+.env
+*.log
+Dockerfile
+.dockerignore

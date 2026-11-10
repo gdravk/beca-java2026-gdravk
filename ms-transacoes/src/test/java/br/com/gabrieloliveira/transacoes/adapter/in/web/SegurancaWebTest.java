@@ -35,10 +35,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 // testes web da seguranca do ms2: requisicoes http "de mentira" no TransacaoController
-// cobrem os erros que o professor pediu: 401 (sem login ou login errado), 403 (dados de outro usuario),
-// 503 (ms1 fora do ar) e o 404 da transacao de outra pessoa
+// eles cobrem os erros que o professor pediu: 401 (sem login ou com login errado), 403 (dados de outro
+// usuario), 503 (ms1 fora do ar) e o 404 da transacao de outra pessoa
 //
-// o ms1 e simulado pelo mock do AutenticarUsuarioUseCase: "ana" com a senha certa e o usuario 7
+// o ms1 e simulado pelo mock do AutenticarUsuarioUseCase: a "ana", com a senha certa, e o usuario 7
 @WebMvcTest(controllers = TransacaoController.class)
 @Import({SecurityConfig.class, ErroDeSegurancaHandler.class, UsuarioLogado.class, TransacaoWebMapper.class})
 class SegurancaWebTest {
@@ -80,7 +80,7 @@ class SegurancaWebTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.mensagem").value("email ou senha invalidos"));
 
-        // o provider existe uma vez so: um login errado e uma chamada ao ms1, e nao duas
+        // o provider existe uma vez so: um login errado vira uma chamada ao ms1, e nao duas
         verify(autenticarUsuarioUseCase, times(1)).autenticar(EMAIL, "errada");
     }
 
@@ -134,7 +134,7 @@ class SegurancaWebTest {
     @Test
     void buscarTransacaoDeOutroUsuarioResponde404() throws Exception {
         logarComoAna();
-        // o caso de uso recebe o id de quem esta logado e responde 404 se a transacao nao for dela
+        // o caso de uso recebe o id de quem esta logado e responde 404 se a transacao nao for dele
         when(buscarTransacaoUseCase.buscarPorId(10L, ID_DA_ANA))
                 .thenThrow(new RecursoNaoEncontradoException("transacao com id 10 nao encontrada"));
 

@@ -6,8 +6,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 
-// um intervalo de datas fechado nas duas pontas: de "inicio" ate "fim", os dois dias inteiros
-// usado na analise de despesas (pedido 5 do PO)
+// um intervalo de datas fechado nas duas pontas: de "inicio" ate "fim", com os dois dias inteiros
+// usado na analise de despesas (pedido 5) e no relatorio (pedido 7)
 //
 // regra do PO: quando o periodo nao e informado, vale o mes atual
 // o metodo "resolver" abaixo decide o periodo final a partir do que o cliente mandou:
@@ -15,7 +15,7 @@ import java.time.YearMonth;
 // - so o inicio: do inicio ate o ultimo dia do mes atual
 // - so o fim: do dia 1 do mes do fim ate o fim
 // - os dois: exatamente o que veio
-// e em todos os casos o inicio nao pode ser depois do fim (vira 400)
+// em todos os casos, o inicio nao pode ser depois do fim (vira 400)
 public class Periodo {
 
     private final LocalDate inicio;
@@ -26,10 +26,10 @@ public class Periodo {
         this.fim = fim;
     }
 
-    // "hoje" vem de fora (e nao de LocalDate.now() aqui dentro) pra que os testes consigam fixar a data
+    // o "hoje" vem de fora (e nao de um LocalDate.now() aqui dentro) para os testes conseguirem fixar a data
     public static Periodo resolver(LocalDate inicioInformado, LocalDate fimInformado, LocalDate hoje) {
-        // YearMonth representa so o ano e o mes (ex: 2026-11), e sabe qual e o primeiro e o ultimo dia dele
-        // (atEndOfMonth ja cuida dos meses de 30 e 31 dias e do fevereiro de ano bissexto)
+        // o YearMonth representa so o ano e o mes (2026-11) e sabe qual e o primeiro e o ultimo dia dele
+        // (o atEndOfMonth ja cuida dos meses de 30 e 31 dias e do fevereiro de ano bissexto)
         YearMonth mesAtual = YearMonth.from(hoje);
 
         LocalDate inicio = inicioInformado;

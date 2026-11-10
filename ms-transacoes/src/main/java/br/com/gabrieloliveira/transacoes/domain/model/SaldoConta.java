@@ -2,8 +2,8 @@ package br.com.gabrieloliveira.transacoes.domain.model;
 
 import java.math.BigDecimal;
 
-// saldo e limites de um usuario, do jeito que chegam do servico externo de contas (api mock)
-// esses dados nao ficam no banco do ms2
+// saldo e limites de um usuario, do jeito que chegam do servico externo de contas (a api mock)
+// esses dados nao ficam guardados no banco do ms2
 public class SaldoConta {
 
     private Long usuarioId;

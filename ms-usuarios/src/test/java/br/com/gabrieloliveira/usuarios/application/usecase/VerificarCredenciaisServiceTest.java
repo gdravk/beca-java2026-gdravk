@@ -35,6 +35,8 @@ class VerificarCredenciaisServiceTest {
 
     @BeforeEach
     void setUp() {
+        // o servico gera o hash falso ja na criacao (ele e usado quando o email nao existe)
+        when(senhaEncoderPort.codificar(anyString())).thenReturn("hash-falso");
         service = new VerificarCredenciaisService(usuarioRepositoryPort, senhaEncoderPort);
     }
 
@@ -77,7 +79,9 @@ class VerificarCredenciaisServiceTest {
         CredenciaisInvalidasException erro = assertThrows(CredenciaisInvalidasException.class,
                 () -> service.verificar("nao@existe.com", "Senha@123"));
         assertEquals("email ou senha invalidos", erro.getMessage());
-        verify(senhaEncoderPort, never()).confere(anyString(), anyString());
+        // mesmo sem usuario, o bcrypt roda (contra o hash falso), entao o tempo de resposta nao entrega
+        // se o email existe ou nao
+        verify(senhaEncoderPort).confere("Senha@123", "hash-falso");
     }
 
     @Test

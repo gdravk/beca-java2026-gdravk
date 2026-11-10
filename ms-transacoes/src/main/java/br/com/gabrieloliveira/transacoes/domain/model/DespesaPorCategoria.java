@@ -2,8 +2,8 @@ package br.com.gabrieloliveira.transacoes.domain.model;
 
 import java.math.BigDecimal;
 
-// uma linha do resumo por categoria: quanto foi gasto nela, em quantas transacoes,
-// e quanto isso representa do total gasto no periodo (percentual)
+// uma linha do resumo por categoria: quanto foi gasto nela, em quantas transacoes e quanto isso
+// representa do total gasto no periodo (o percentual)
 public class DespesaPorCategoria {
 
     private final Categoria categoria;

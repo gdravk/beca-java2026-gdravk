@@ -22,12 +22,12 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-// testes do caso de uso de atualizar usuario
-// cobrem as regras de duplicidade (so contra OUTROS usuarios) e a senha opcional no update
+// testes do caso de uso de atualizar usuario: as regras de duplicidade (conferidas so contra OUTROS
+// usuarios) e a senha opcional na atualizacao
 @ExtendWith(MockitoExtension.class)
 class AtualizarUsuarioServiceTest {
 
-    // data fixa pra conseguir conferir que ela nao muda no update
+    // data fixa, para conseguir conferir que ela nao muda na atualizacao
     private static final LocalDateTime DATA_CRIACAO = LocalDateTime.of(2026, 10, 30, 10, 0);
 
     @Mock
@@ -45,7 +45,7 @@ class AtualizarUsuarioServiceTest {
 
     @Test
     void deveAtualizarOsDadosETrocarASenhaQuandoElaForInformada() {
-        // dado: o usuario 1 existe no banco com a senha antiga
+        // dado: o usuario 1 existe no banco, com a senha antiga
         when(usuarioRepositoryPort.buscarPorId(1L)).thenReturn(Optional.of(usuarioDoBanco()));
         when(senhaEncoderPort.codificar("senhaNova1")).thenReturn("hash-novo");
         // thenAnswer devolvendo o proprio argumento = "o banco salvou e devolveu o mesmo objeto"
@@ -60,25 +60,25 @@ class AtualizarUsuarioServiceTest {
         assertEquals("ana.lima@email.com", atualizado.getEmail());
         assertEquals("11111111111", atualizado.getCpf());
         assertEquals("hash-novo", atualizado.getSenha());
-        // id e data de criacao continuam os do banco
+        // o id e a data de criacao continuam os do banco
         assertEquals(1L, atualizado.getId());
         assertEquals(DATA_CRIACAO, atualizado.getDataCriacao());
     }
 
     @Test
     void deveManterASenhaAtualQuandoASenhaNaoForInformada() {
-        // dado: o usuario existe com a senha antiga
+        // dado: o usuario existe, com a senha antiga
         when(usuarioRepositoryPort.buscarPorId(1L)).thenReturn(Optional.of(usuarioDoBanco()));
         when(usuarioRepositoryPort.salvar(any(Usuario.class))).thenAnswer(chamada -> chamada.getArgument(0));
 
-        // quando: chegam dados novos SEM senha (null), so trocando o nome
+        // quando: chegam dados novos SEM senha (null), trocando so o nome
         Usuario atualizado = atualizarUsuarioService.atualizar(1L,
                 dadosNovos("Ana Lima", "ana@email.com", "12345678901", null));
 
-        // entao: o nome mudou, mas a senha continua o hash antigo
+        // entao: o nome mudou, mas a senha continua com o hash antigo
         assertEquals("Ana Lima", atualizado.getNome());
         assertEquals("hash-antigo", atualizado.getSenha());
-        // e o bcrypt nem foi chamado (antes, ele recriptografava a senha em todo update)
+        // e o bcrypt nem foi chamado (antes, ele criptografava a senha de novo em toda atualizacao)
         verify(senhaEncoderPort, never()).codificar(anyString());
     }
 
@@ -94,7 +94,7 @@ class AtualizarUsuarioServiceTest {
 
     @Test
     void naoDevePermitirUsarOEmailDeOutroUsuario() {
-        // dado: o email novo ja pertence a OUTRO usuario (id diferente de 1)
+        // dado: o email novo ja pertence a OUTRO usuario (com id diferente de 1)
         when(usuarioRepositoryPort.buscarPorId(1L)).thenReturn(Optional.of(usuarioDoBanco()));
         when(usuarioRepositoryPort.existePorEmailEmOutroUsuario("bruno@email.com", 1L)).thenReturn(true);
 
@@ -120,12 +120,12 @@ class AtualizarUsuarioServiceTest {
         verify(usuarioRepositoryPort, never()).salvar(any());
     }
 
-    // usuario como ele "estaria" no banco antes do update
+    // o usuario como ele "estaria" no banco antes da atualizacao
     private Usuario usuarioDoBanco() {
         return new Usuario(1L, "Ana Souza", "ana@email.com", "12345678901", "hash-antigo", DATA_CRIACAO);
     }
 
-    // dados que chegariam da api (senha pode ser null = nao trocar)
+    // os dados que chegariam da api (senha null = nao trocar)
     private Usuario dadosNovos(String nome, String email, String cpf, String senha) {
         Usuario dados = new Usuario();
         dados.setNome(nome);

@@ -5,7 +5,7 @@ import jakarta.validation.ConstraintValidatorContext;
 
 import java.nio.charset.StandardCharsets;
 
-// faz a conferencia da anotacao @SenhaCabeNoBcrypt
+// faz a conferencia de verdade da anotacao @SenhaCabeNoBcrypt
 public class SenhaCabeNoBcryptValidator implements ConstraintValidator<SenhaCabeNoBcrypt, String> {
 
     // limite do proprio algoritmo bcrypt: o que passar disso ele recusa
@@ -13,11 +13,11 @@ public class SenhaCabeNoBcryptValidator implements ConstraintValidator<SenhaCabe
 
     @Override
     public boolean isValid(String senha, ConstraintValidatorContext contexto) {
-        // senha null fica por conta do @NotBlank (no cadastro) ou e permitida (no PUT, senha opcional)
+        // senha null fica por conta do @NotBlank (no cadastro) ou e permitida (no PUT, onde a senha e opcional)
         if (senha == null) {
             return true;
         }
-        // getBytes(UTF_8) transforma o texto nos bytes que o bcrypt vai receber
+        // o getBytes(UTF_8) transforma o texto nos bytes que o bcrypt vai receber, e ai e so contar
         return senha.getBytes(StandardCharsets.UTF_8).length <= MAXIMO_DE_BYTES;
     }
 }

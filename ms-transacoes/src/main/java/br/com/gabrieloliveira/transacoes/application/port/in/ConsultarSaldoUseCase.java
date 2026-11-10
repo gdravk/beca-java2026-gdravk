@@ -2,7 +2,7 @@ package br.com.gabrieloliveira.transacoes.application.port.in;
 
 import br.com.gabrieloliveira.transacoes.domain.model.SaldoConta;
 
-// porta de entrada pra mostrar o saldo e os limites atuais de um usuario, lidos na hora da api mock
+// porta de entrada para mostrar o saldo e os limites atuais de um usuario, lidos na hora da api mock
 public interface ConsultarSaldoUseCase {
 
     // lanca RecursoNaoEncontradoException se o usuario nao tiver conta (404)

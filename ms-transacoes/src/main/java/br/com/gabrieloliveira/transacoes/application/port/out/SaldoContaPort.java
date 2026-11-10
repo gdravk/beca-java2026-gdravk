@@ -4,7 +4,7 @@ import br.com.gabrieloliveira.transacoes.domain.model.SaldoConta;
 
 import java.util.Optional;
 
-// consulta saldo e limites de um usuario no servico externo de contas (api mock)
+// consulta o saldo e os limites de um usuario no servico externo de contas (a api mock)
 public interface SaldoContaPort {
 
     // Optional vazio = o usuario nao tem conta cadastrada no servico

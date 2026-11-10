@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ListarTransacoesService implements ListarTransacoesUseCase {
 
-    // limites usados quando a data nao e informada, para a consulta cobrir todo o historico
+    // limites usados quando a data nao vem, para a consulta cobrir todo o historico
     private static final LocalDateTime SEM_DATA_INICIAL = LocalDateTime.of(1900, 1, 1, 0, 0);
     private static final LocalDateTime SEM_DATA_FINAL = LocalDateTime.of(9999, 12, 31, 0, 0);
 
@@ -36,7 +36,7 @@ public class ListarTransacoesService implements ListarTransacoesUseCase {
             de = inicio.atStartOfDay();
         }
 
-        // o fim e exclusivo no repositorio, por isso o dia seguinte: assim o dia final entra inteiro
+        // no repositorio o fim nao entra no periodo, por isso usamos o comeco do dia seguinte: assim o dia final entra inteiro
         LocalDateTime ate = SEM_DATA_FINAL;
         if (fim != null) {
             ate = fim.plusDays(1).atStartOfDay();

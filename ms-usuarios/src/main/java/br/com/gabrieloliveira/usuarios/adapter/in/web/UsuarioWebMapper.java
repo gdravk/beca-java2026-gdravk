@@ -16,13 +16,13 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-// tradutor entre o mundo http (dtos) e o centro do sistema (Usuario do dominio)
+// tradutor entre o mundo http (os dtos) e o centro do sistema (o Usuario do dominio)
 // os casos de uso nunca recebem nem devolvem dto, so objetos do dominio
 @Component
 public class UsuarioWebMapper {
 
-    // json que chegou -> Usuario do dominio
-    // id e data de criacao ficam null, quem decide eles e o caso de uso e o banco
+    // json do cadastro -> Usuario do dominio
+    // o id e a data de criacao ficam null: quem define os dois e o caso de uso e o banco
     public Usuario paraDominio(UsuarioRequestDTO dto) {
         Usuario usuario = new Usuario();
         usuario.setNome(dto.getNome());
@@ -32,10 +32,10 @@ public class UsuarioWebMapper {
         return usuario;
     }
 
-    // json do update -> Usuario do dominio
-    // igual ao de cima, mas aqui a senha pode chegar null (quando o cliente nao quer trocar)
-    // o AtualizarUsuarioService entende o null como "mantem a senha atual"
-    // sao dois metodos com o mesmo nome e parametros diferentes: o java escolhe qual usar pelo tipo do dto
+    // json da atualizacao -> Usuario do dominio
+    // igual ao de cima, mas aqui a senha pode chegar null (quando a pessoa nao quer trocar), e o
+    // AtualizarUsuarioService entende esse null como "mantem a senha atual"
+    // sao dois metodos com o mesmo nome e parametros diferentes; o java escolhe qual usar pelo tipo do dto
     // (isso se chama sobrecarga de metodo)
     public Usuario paraDominio(UsuarioUpdateRequestDTO dto) {
         Usuario usuario = new Usuario();
@@ -46,7 +46,7 @@ public class UsuarioWebMapper {
         return usuario;
     }
 
-    // Usuario do dominio -> json de resposta (aqui a senha fica de fora)
+    // Usuario do dominio -> json de resposta (a senha fica de fora)
     public UsuarioResponseDTO paraResponse(Usuario usuario) {
         return new UsuarioResponseDTO(
                 usuario.getId(),

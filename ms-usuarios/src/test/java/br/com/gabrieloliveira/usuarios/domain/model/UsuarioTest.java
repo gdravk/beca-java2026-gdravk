@@ -13,8 +13,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 // - entao: confere se o resultado foi o esperado
 class UsuarioTest {
 
-    // @Test marca o metodo como um teste; o junit roda cada um separado
-    // o nome do metodo ja diz o cenario, pra quem ler o relatorio entender sem abrir o codigo
+    // o @Test marca o metodo como um teste, e o junit roda cada um separado
+    // o nome do metodo ja conta o cenario, para quem ler o relatorio entender sem abrir o codigo
     @Test
     void deveNormalizarEmailAoUsarOSetter() {
         // dado: um usuario novo
@@ -30,8 +30,8 @@ class UsuarioTest {
 
     @Test
     void deveNormalizarEmailAoUsarOConstrutor() {
-        // o construtor completo e o que o adaptador de persistencia usa ao ler do banco,
-        // entao ele tambem precisa normalizar
+        // o construtor completo e o que o adaptador de persistencia usa ao ler do banco, entao ele
+        // tambem precisa normalizar
         Usuario usuario = new Usuario(1L, "Ana", " ANA@EMAIL.COM", "12345678901", "hash", null);
 
         assertEquals("ana@email.com", usuario.getEmail());
@@ -39,8 +39,8 @@ class UsuarioTest {
 
     @Test
     void deveAceitarEmailNullSemDarErro() {
-        // email null nao pode quebrar com NullPointerException;
-        // quem barra email vazio na api e o @NotBlank do dto
+        // um email null nao pode quebrar com NullPointerException
+        // (quem barra o email vazio na api e o @NotBlank do dto)
         Usuario usuario = new Usuario();
 
         usuario.setEmail(null);

@@ -11,8 +11,9 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
-// repositorio spring data da tabela transacoes; usado apenas pelo TransacaoPersistenceAdapter
-// as consultas com @Query sao jpql: falam em nomes de classe e atributo (TransacaoEntity, dataHora), nao de tabela
+// repositorio do spring data da tabela transacoes; so o TransacaoPersistenceAdapter usa ele
+// as consultas com @Query sao em jpql: falam em nomes de classe e de atributo (TransacaoEntity, dataHora),
+// e nao de tabela
 public interface TransacaoJpaRepository extends JpaRepository<TransacaoEntity, Long> {
 
     @Query("select t from TransacaoEntity t"
@@ -30,7 +31,7 @@ public interface TransacaoJpaRepository extends JpaRepository<TransacaoEntity, L
                                                          @Param("de") LocalDateTime de,
                                                          @Param("ate") LocalDateTime ate);
 
-    // coalesce devolve 0 quando nao ha nenhuma transacao no periodo (sem ele, a soma viria null)
+    // o coalesce devolve 0 quando nao ha nenhuma transacao no periodo (sem ele, a soma viria null)
     @Query("select coalesce(sum(t.valor), 0) from TransacaoEntity t"
             + " where t.usuarioId = :usuarioId and t.status = :status and t.tipo in :tipos"
             + " and t.dataHora >= :de and t.dataHora < :ate")
@@ -44,8 +45,8 @@ public interface TransacaoJpaRepository extends JpaRepository<TransacaoEntity, L
 
     // despesas da analise (pedido 5): saidas aprovadas do usuario no periodo, tirando os estornos
     // - "t.transacaoOriginalId is null": a propria transacao nao e um estorno
-    // - "not exists (...)": nao existe um estorno aprovado apontando pra ela (o dinheiro nao voltou)
-    //   o "not exists" e uma subconsulta: pra cada transacao t, procura outra transacao e que seja estorno de t
+    // - "not exists (...)": nao existe um estorno aprovado apontando para ela (ou seja, o dinheiro nao voltou)
+    //   o "not exists" e uma subconsulta: para cada transacao t, procura outra transacao e que seja estorno de t
     @Query("select t from TransacaoEntity t"
             + " where t.usuarioId = :usuarioId and t.status = :status and t.tipo in :tipos"
             + " and t.transacaoOriginalId is null"

@@ -18,13 +18,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // testes do leitor de csv
-// aqui nao tem mock: o leitor so precisa do validador (o mesmo que o spring usa) e do mapper,
-// e os dois sao objetos simples que funcionam sem subir a aplicacao nem o banco
+// aqui nao tem mock: o leitor so precisa do validador (o mesmo que o spring usa) e do mapper, e os
+// dois sao objetos simples que funcionam sem subir a aplicacao nem o banco
 class LeitorCsvUsuariosTest {
 
     private static final String CABECALHO = "nome;email;cpf;senha\n";
 
-    // a fabrica de validadores e "pesada" de criar, entao criamos uma vez so pra todos os testes (@BeforeAll)
+    // a fabrica de validadores e "pesada" de criar, entao criamos uma vez so para todos os testes (@BeforeAll)
     // e fechamos no fim (@AfterAll); por isso esses dois metodos sao static
     private static ValidatorFactory fabricaDeValidadores;
 
@@ -53,7 +53,7 @@ class LeitorCsvUsuariosTest {
 
         List<LinhaImportacao> linhas = leitor.ler(bytes(csv));
 
-        // o cabecalho e a linha 1, entao os usuarios sao as linhas 2 e 3
+        // o cabecalho e a linha 1, entao os usuarios estao nas linhas 2 e 3
         assertEquals(2, linhas.size());
         assertTrue(linhas.get(0).isValida());
         assertEquals(2, linhas.get(0).getNumeroLinha());
@@ -63,8 +63,8 @@ class LeitorCsvUsuariosTest {
 
     @Test
     void deveAceitarArquivoComBomEQuebraDeLinhaDoWindows() {
-        // ﻿ = BOM (o excel coloca no comeco), \r\n = quebra de linha do windows
-        String csv = "﻿nome;email;cpf;senha\r\nJoão Pereira;joao@email.com;12345678901;Senha@123\r\n";
+        // \uFEFF = o BOM (o excel coloca no comeco), e \r\n = a quebra de linha do windows
+        String csv = "\uFEFFnome;email;cpf;senha\r\nJoão Pereira;joao@email.com;12345678901;Senha@123\r\n";
 
         List<LinhaImportacao> linhas = leitor.ler(bytes(csv));
 
@@ -131,7 +131,7 @@ class LeitorCsvUsuariosTest {
 
     @Test
     void linhasEmBrancoSaoIgnoradasMasANumeracaoContinuaCerta() {
-        // linha 2 em branco: o usuario esta na linha 3 do arquivo
+        // a linha 2 esta em branco: o usuario esta na linha 3 do arquivo
         String csv = CABECALHO + "\n" + "Ana Souza;ana@email.com;12345678901;Senha@123\n\n";
 
         List<LinhaImportacao> linhas = leitor.ler(bytes(csv));

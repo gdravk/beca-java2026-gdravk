@@ -18,7 +18,7 @@ class Ms1AutenticacaoAdapterChaveTest {
 
     @Test
     void chaveDeExemploDoEnvExampleImpedeAAplicacaoDeSubir() {
-        // sugestao da revisao 06/11: a chave de exemplo esta no github, entao nao e segredo
+        // sugestao do professor na revisao de 06/11: a chave de exemplo esta no github, entao nao e segredo
         assertThrows(IllegalStateException.class,
                 () -> new Ms1AutenticacaoAdapter(URL_DO_MS1, 1000, Ms1AutenticacaoAdapter.CHAVE_DE_EXEMPLO));
     }

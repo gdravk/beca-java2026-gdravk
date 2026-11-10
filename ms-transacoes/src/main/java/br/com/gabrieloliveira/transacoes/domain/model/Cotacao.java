@@ -5,7 +5,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 
 // cotacao de uma moeda estrangeira em reais, na data informada
-// taxa = quantos reais vale 1 unidade da moeda (ex: USD 5.4321 = 1 dolar custa R$ 5,4321)
+// taxa = quantos reais vale 1 unidade da moeda (USD 5.4321 quer dizer que 1 dolar custa R$ 5,4321)
 public class Cotacao {
 
     private String moeda;

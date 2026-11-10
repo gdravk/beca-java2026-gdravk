@@ -6,18 +6,18 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-// junta as mensagens de erro de validacao por campo, para o "campos" da resposta 400
-// por que nao um Map simples? porque um campo pode ter dois erros ao mesmo tempo
-// (ex: valor negativo E com 3 casas decimais) e o put de um Map apagaria a primeira mensagem
-// aqui as mensagens do mesmo campo ficam juntas, separadas por "; "
-// TreeMap e TreeSet deixam campos e mensagens em ordem alfabetica: a resposta sai sempre igual
-// (o bean validation nao garante a ordem em que os erros chegam)
+// guarda as mensagens de erro de validacao de cada campo, para montar o "campos" da resposta 400
+// por que nao usar um Map simples? porque um campo pode ter dois erros ao mesmo tempo (um valor negativo
+// e com 3 casas decimais, por exemplo), e o put do Map apagaria a primeira mensagem. aqui elas ficam juntas,
+// separadas por "; "
+// o bean validation nao garante a ordem em que os erros chegam, entao o TreeMap e o TreeSet colocam
+// campos e mensagens em ordem alfabetica: a resposta sai sempre igual
 class ErrosPorCampo {
 
     private final Map<String, Set<String>> mensagensPorCampo = new TreeMap<>();
 
     void adicionar(String campo, String mensagem) {
-        // computeIfAbsent cria a lista do campo na primeira vez e depois so reaproveita
+        // na primeira mensagem do campo o computeIfAbsent cria a lista dele; nas proximas, so reaproveita
         mensagensPorCampo.computeIfAbsent(campo, nome -> new TreeSet<>()).add(mensagem);
     }
 

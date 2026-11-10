@@ -13,7 +13,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 // seguranca do ms2 (pedido 6 do PO): autenticacao basica, conferida no ms1
 //
-// - transacoes, saldo, analise (e o relatorio, quando existir) exigem login
+// - transacoes, saldo, analise e relatorio exigem login
 // - o swagger fica aberto, como o PO pediu
 // - o ms2 nao guarda usuario nem senha: cada login e conferido no ms1 (Ms1AuthenticationProvider)
 @Configuration
@@ -21,7 +21,7 @@ public class SecurityConfig {
 
     // o "gerente de autenticacao", com o nosso provider criado aqui com new (e nao como @Component):
     // assim ele existe uma vez so, e cada login errado pergunta ao ms1 uma vez, e nao duas
-    // ter esse bean tambem desliga o usuario padrao "user" com senha gerada que o spring boot criaria sozinho
+    // de quebra, ter este bean desliga o usuario padrao "user" (com senha gerada) que o spring boot criaria sozinho
     @Bean
     public AuthenticationManager authenticationManager(AutenticarUsuarioUseCase autenticarUsuarioUseCase) {
         return new ProviderManager(new Ms1AuthenticationProvider(autenticarUsuarioUseCase));
@@ -32,7 +32,7 @@ public class SecurityConfig {
                                                    AuthenticationManager authenticationManager,
                                                    ErroDeSegurancaHandler erroDeSegurancaHandler) throws Exception {
         http
-                // api rest sem sessao de navegador: csrf desligado para os POST funcionarem
+                // api rest sem sessao de navegador: o csrf fica desligado para os POST funcionarem
                 .csrf(csrf -> csrf.disable())
                 // sem sessao: o email e a senha vao em toda requisicao
                 .sessionManagement(sessao -> sessao.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

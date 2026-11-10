@@ -7,9 +7,9 @@ import br.com.gabrieloliveira.transacoes.domain.model.Transacao;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-// regras de negocio que decidem se uma transacao e aprovada ou rejeitada
-// cada metodo devolve o motivo da rejeicao, ou Optional vazio quando a transacao passa na regra
-// java puro: nao consulta banco nem api, recebe tudo pronto de quem chama (o caso de uso)
+// as regras de negocio que decidem se uma transacao e aprovada ou rejeitada
+// cada metodo devolve o motivo da rejeicao, ou um Optional vazio quando a transacao passa na regra
+// e java puro: nao consulta banco nem api, recebe tudo pronto de quem chama (o caso de uso)
 public class ValidadorDeTransacao {
 
     // regras que dependem so dos dados da propria transacao
@@ -31,7 +31,7 @@ public class ValidadorDeTransacao {
         return Optional.empty();
     }
 
-    // regras de saida (retirada, transferencia e compra), comparando sempre em reais
+    // regras das saidas (retirada, transferencia e compra), comparando sempre em reais
     // totalSaidasAprovadasHoje = soma das saidas ja aprovadas do usuario no dia, sem contar esta
     public Optional<String> validarSaldoELimites(Transacao transacao, SaldoConta conta,
                                                  BigDecimal totalSaidasAprovadasHoje) {

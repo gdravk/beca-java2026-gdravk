@@ -28,11 +28,11 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 // testes do adaptador da brasilapi, sem internet
-// o MockRestServiceServer e um "servidor http de mentira": cada teste diz qual url ele vai receber
-// e o que ele responde (json, 404, 500, timeout...); no fim, server.verify() confere se todas as
-// chamadas esperadas aconteceram, e o servidor reclama sozinho se chegar uma chamada que ninguem esperava
+// o MockRestServiceServer e um "servidor http de mentira": cada teste diz qual url ele vai receber e o
+// que ele responde (json, 404, 500, timeout...). no fim, o server.verify() confere se todas as chamadas
+// esperadas aconteceram, e o servidor reclama sozinho se chegar uma chamada que ninguem esperava
 //
-// o relogio fica parado em 05/11/2026 (quinta-feira) as 10h de brasilia, e pode ser adiantado nos testes de cache
+// o relogio fica parado em 05/11/2026 (uma quinta-feira) as 10h de brasilia, e pode ser adiantado nos testes de cache
 class BrasilApiCambioAdapterTest {
 
     private static final String URL_BASE = "http://brasilapi.teste";
@@ -45,7 +45,7 @@ class BrasilApiCambioAdapterTest {
     @BeforeEach
     void setUp() {
         RestClient.Builder builder = RestClient.builder().baseUrl(URL_BASE);
-        // bindTo liga o servidor de mentira no RestClient: as chamadas nao saem pra internet
+        // o bindTo liga o servidor de mentira no RestClient: as chamadas nao saem para a internet
         server = MockRestServiceServer.bindTo(builder).build();
         relogio = new RelogioDeTeste(Instant.parse("2026-11-05T13:00:00Z"));
         adapter = new BrasilApiCambioAdapter(builder.build(), relogio);
@@ -53,7 +53,7 @@ class BrasilApiCambioAdapterTest {
 
     @Test
     void diaUtilUsaACotacaoDeVendaDoBoletimMaisRecenteMesmoForaDeOrdem() {
-        // os boletins vem fora de ordem de horario: o mais recente (13:09) esta no meio da lista
+        // os boletins vem fora da ordem de horario: o mais recente (13:09) esta no meio da lista
         esperar("USD", "2026-11-05").andRespond(withSuccess("""
                 {"moeda":"USD","data":"2026-11-05","cotacoes":[
                   {"cotacao_compra":5.40,"cotacao_venda":5.41,"data_hora_cotacao":"2026-11-05 10:08:00.123","tipo_boletim":"ABERTURA"},
@@ -70,7 +70,7 @@ class BrasilApiCambioAdapterTest {
 
     @Test
     void semCotacaoHojeVoltaDiaADiaAteAcharEUsaADataDaResposta() {
-        // hoje bloqueado (regra do utc da brasilapi), ontem sem cotacao (404), anteontem com cotacao
+        // hoje bloqueado (a regra do utc da brasilapi), ontem sem cotacao (404) e anteontem com cotacao
         esperar("EUR", "2026-11-05").andRespond(withStatus(HttpStatus.BAD_REQUEST)
                 .body("{\"type\":\"today_date_error\"}").contentType(MediaType.APPLICATION_JSON));
         esperar("EUR", "2026-11-04").andRespond(withStatus(HttpStatus.NOT_FOUND));
@@ -106,7 +106,7 @@ class BrasilApiCambioAdapterTest {
 
     @Test
     void timeoutViraServicoIndisponivel() {
-        // withException simula a conexao estourando o tempo maximo de espera
+        // o withException simula a conexao estourando o tempo maximo de espera
         esperar("USD", "2026-11-05").andRespond(withException(new SocketTimeoutException("demorou demais")));
 
         assertThrows(ServicoExternoIndisponivelException.class, () -> adapter.buscarCotacaoAtual("USD"));
@@ -115,7 +115,7 @@ class BrasilApiCambioAdapterTest {
 
     @Test
     void depoisDeUmaFalhaAsProximasConsultasNemChamamABrasilApiDuranteAPausa() {
-        // so o dolar chega no servidor; o euro, logo em seguida, falha na hora sem esperar outro timeout
+        // so o dolar chega no servidor; o euro, logo em seguida, falha na hora, sem esperar outro timeout
         esperar("USD", "2026-11-05").andRespond(withException(new SocketTimeoutException("demorou demais")));
 
         assertThrows(ServicoExternoIndisponivelException.class, () -> adapter.buscarCotacaoAtual("USD"));
@@ -125,8 +125,8 @@ class BrasilApiCambioAdapterTest {
 
     @Test
     void passadaAPausaTentaABrasilApiDeNovo() {
-        // o servidor de mentira precisa saber de todas as chamadas antes da primeira acontecer:
-        // a primeira falha, a segunda (2 minutos depois) responde a cotacao
+        // o servidor de mentira precisa saber de todas as chamadas antes de a primeira acontecer:
+        // a primeira falha, e a segunda (2 minutos depois) responde a cotacao
         esperar("USD", "2026-11-05").andRespond(withServerError());
         esperar("USD", "2026-11-05").andRespond(withSuccess(jsonComUmBoletim("USD", "2026-11-05", "5.40"),
                 MediaType.APPLICATION_JSON));
@@ -149,14 +149,14 @@ class BrasilApiCambioAdapterTest {
 
     @Test
     void moedaRecusadaPelaBrasilApiEhIndisponivelMasNaoLigaAPausa() {
-        // 400 sem ser o erro do "dia de hoje" (ex: moeda invalida): a brasilapi esta no ar
+        // um 400 que nao e o erro do "dia de hoje" (uma moeda invalida, por exemplo): a brasilapi esta no ar
         esperar("XYZ", "2026-11-05").andRespond(withStatus(HttpStatus.BAD_REQUEST)
                 .body("{\"type\":\"invalid_currency\"}").contentType(MediaType.APPLICATION_JSON));
         esperar("USD", "2026-11-05").andRespond(withSuccess(jsonComUmBoletim("USD", "2026-11-05", "5.40"),
                 MediaType.APPLICATION_JSON));
 
         assertThrows(ServicoExternoIndisponivelException.class, () -> adapter.buscarCotacaoAtual("XYZ"));
-        // logo depois, o dolar ainda consulta normal (nao entrou em pausa)
+        // logo depois, o dolar ainda e consultado normalmente (a brasilapi nao entrou em pausa)
         assertEquals(new BigDecimal("5.40"), adapter.buscarCotacaoAtual("USD").getTaxa());
         server.verify();
     }
@@ -189,7 +189,7 @@ class BrasilApiCambioAdapterTest {
         server.verify();
     }
 
-    // apoio: diz ao servidor de mentira que vai chegar um GET nessa url
+    // apoio: avisa o servidor de mentira que vai chegar um GET nesta url
     private org.springframework.test.web.client.ResponseActions esperar(String moeda, String data) {
         return server.expect(requestTo(URL_BASE + "/cambio/v1/cotacao/" + moeda + "/" + data))
                 .andExpect(method(HttpMethod.GET));
@@ -201,7 +201,7 @@ class BrasilApiCambioAdapterTest {
                 + " 13:09:23.164\",\"tipo_boletim\":\"FECHAMENTO PTAX\"}]}";
     }
 
-    // relogio que da pra adiantar no meio do teste (o Clock.fixed do java fica parado pra sempre)
+    // um relogio que da para adiantar no meio do teste (o Clock.fixed do java fica parado para sempre)
     private static class RelogioDeTeste extends Clock {
 
         private Instant agora;

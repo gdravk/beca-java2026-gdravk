@@ -5,18 +5,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.math.BigDecimal;
 
-// um "boletim" de cotacao do banco central: durante o dia saem varios (abertura, intermediarios e fechamento ptax)
+// um "boletim" de cotacao do banco central; durante o dia saem varios (abertura, intermediarios e o fechamento ptax)
 // exemplo do json da brasilapi:
 // { "cotacao_compra": 5.4772, "cotacao_venda": 5.4778, "data_hora_cotacao": "2026-11-04 13:05:19", "tipo_boletim": "FECHAMENTO PTAX" }
-// a brasilapi usa nomes com underline (snake_case), e no java a gente usa camelCase;
-// o @JsonProperty("nome_no_json") faz a ponte: diz pro jackson de qual campo do json vem cada atributo
+// a brasilapi usa nomes com underline (snake_case) e no java usamos camelCase; o @JsonProperty("nome_no_json")
+// faz a ponte, dizendo ao jackson de qual campo do json vem cada atributo
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BoletimBrasilApiDTO {
 
     @JsonProperty("cotacao_compra")
     private BigDecimal cotacaoCompra;
 
-    // cotacao de venda = quanto custa COMPRAR 1 unidade da moeda estrangeira em reais (e a que usamos)
+    // cotacao de venda = quanto custa COMPRAR 1 unidade da moeda estrangeira, em reais (e a que usamos)
     @JsonProperty("cotacao_venda")
     private BigDecimal cotacaoVenda;
 

@@ -7,9 +7,9 @@ import br.com.gabrieloliveira.transacoes.domain.exception.RecursoNaoEncontradoEx
 import br.com.gabrieloliveira.transacoes.domain.exception.RegraNegocioException;
 import br.com.gabrieloliveira.transacoes.domain.model.Transacao;
 
-// estorno = nova transacao do tipo inverso, com o mesmo valor e a mesma categoria, ligada a original
-// ex: estorno de uma compra vira um deposito; estorno de um deposito vira uma retirada
-// o estorno passa pelo mesmo fluxo de criacao, entao um estorno de deposito tambem confere saldo e limites
+// estorno = uma nova transacao do tipo inverso, com o mesmo valor e a mesma categoria, ligada a original
+// o estorno de uma compra vira um deposito, e o estorno de um deposito vira uma retirada
+// como ele passa pelo mesmo caminho da criacao, um estorno de deposito tambem confere saldo e limites
 public class EstornarTransacaoService implements EstornarTransacaoUseCase {
 
     private final TransacaoRepositoryPort transacaoRepositoryPort;
@@ -28,14 +28,14 @@ public class EstornarTransacaoService implements EstornarTransacaoUseCase {
                         "transacao com id " + idTransacaoOriginal + " nao encontrada"));
 
         // seguranca (pedido 6): ninguem estorna a transacao de outro usuario
-        // responde 404, igual a uma transacao que nao existe (mesma regra do GET /transactions/{id}):
+        // responde 404, igual a uma transacao que nao existe (a mesma regra do GET /transactions/{id}),
         // assim ninguem descobre quais ids existem e sao de outras pessoas
-        // essa conferencia vem antes de todas as outras, pra nao contar nada sobre a transacao de outra pessoa
+        // essa conferencia vem antes de todas as outras, para nao contar nada sobre a transacao de outra pessoa
         if (!original.getUsuarioId().equals(usuarioSolicitanteId)) {
             throw new RecursoNaoEncontradoException("transacao com id " + idTransacaoOriginal + " nao encontrada");
         }
 
-        // transacao rejeitada nunca movimentou dinheiro, entao nao tem o que corrigir
+        // uma transacao rejeitada nunca movimentou dinheiro, entao nao tem o que corrigir
         if (!original.isAprovada()) {
             throw new RegraNegocioException("so transacoes aprovadas podem ser estornadas");
         }

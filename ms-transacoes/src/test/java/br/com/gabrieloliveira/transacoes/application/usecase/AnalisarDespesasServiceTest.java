@@ -32,8 +32,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 // testes do caso de uso da analise de despesas
-// o banco e um mock (TransacaoRepositoryPort) e o relogio fica parado em 05/11/2026,
-// assim o "mes atual" e sempre novembro de 2026, nao importa quando o teste roda
+// o banco e um mock (TransacaoRepositoryPort) e o relogio fica parado em 05/11/2026, entao o
+// "mes atual" e sempre novembro de 2026, nao importa quando o teste roda
 @ExtendWith(MockitoExtension.class)
 class AnalisarDespesasServiceTest {
 
@@ -46,7 +46,7 @@ class AnalisarDespesasServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Clock.fixed cria um relogio que sempre marca o mesmo instante
+        // o Clock.fixed cria um relogio que marca sempre o mesmo instante
         Clock relogioParado = Clock.fixed(Instant.parse("2026-11-05T15:00:00Z"), FUSO);
         service = new AnalisarDespesasService(transacaoRepositoryPort, new AnalisadorDeDespesas(), relogioParado);
     }

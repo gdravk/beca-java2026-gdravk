@@ -18,12 +18,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // teste de repositorio: roda a consulta listarDespesas de verdade, num banco h2 em memoria
-// (a regra de "transacao estornada nao conta" so existe dentro da query, entao precisa de um banco pra testar)
+// (a regra de "transacao estornada nao conta" so existe dentro da query, entao precisa de um banco para testar)
 //
-// @DataJpaTest sobe so a parte do jpa (entidades, repositorios e um banco em memoria),
-// sem controllers, sem api mock e sem brasilapi; cada teste roda numa transacao que e desfeita no fim,
-// entao um teste nao enxerga os dados do outro
-// @Import traz o adaptador e o mapper, que nao sao repositorios e por isso nao viriam sozinhos
+// o @DataJpaTest sobe so a parte do jpa (entidades, repositorios e um banco em memoria), sem controllers,
+// sem api mock e sem brasilapi; cada teste roda numa transacao que e desfeita no fim, entao um teste
+// nao enxerga os dados do outro
+// o @Import traz o adaptador e o mapper, que nao sao repositorios e por isso nao viriam sozinhos
 @DataJpaTest
 @Import({TransacaoPersistenceAdapter.class, TransacaoPersistenceMapper.class})
 class TransacaoPersistenceAdapterTest {
@@ -56,7 +56,7 @@ class TransacaoPersistenceAdapterTest {
 
     @Test
     void estornoRejeitadoNaoDesfazACompraEElaContinuaContando() {
-        // o estorno foi REJEITADO (ex: sem saldo), entao o dinheiro nao voltou: a compra ainda e despesa
+        // o estorno foi REJEITADO (sem saldo, por exemplo), entao o dinheiro nao voltou e a compra ainda e despesa
         Transacao compra = adapter.salvar(transacao(TipoTransacao.COMPRA, "40.00", 3, StatusTransacao.APPROVED, null));
         adapter.salvar(transacao(TipoTransacao.DEPOSITO, "40.00", 3, StatusTransacao.REJECTED, compra.getId()));
 
@@ -72,7 +72,7 @@ class TransacaoPersistenceAdapterTest {
         Transacao retirada = adapter.salvar(transacao(TipoTransacao.RETIRADA, "100.00", 2, StatusTransacao.APPROVED, null));
         Transacao transferencia = adapter.salvar(
                 transacao(TipoTransacao.TRANSFERENCIA, "60.00", 4, StatusTransacao.APPROVED, null));
-        // nada disso pode aparecer:
+        // nada disto pode aparecer:
         adapter.salvar(transacao(TipoTransacao.DEPOSITO, "1000.00", 2, StatusTransacao.APPROVED, null));
         adapter.salvar(transacao(TipoTransacao.COMPRA, "999.00", 2, StatusTransacao.REJECTED, null));
         Transacao deOutroUsuario = transacao(TipoTransacao.COMPRA, "70.00", 2, StatusTransacao.APPROVED, null);
@@ -88,7 +88,7 @@ class TransacaoPersistenceAdapterTest {
         for (Transacao despesa : despesas) {
             ids.add(despesa.getId());
         }
-        // ordem de data: retirada (dia 2), transferencia (dia 4), compra (dia 5)
+        // em ordem de data: retirada (dia 2), transferencia (dia 4), compra (dia 5)
         assertEquals(List.of(retirada.getId(), transferencia.getId(), compra.getId()), ids);
     }
 

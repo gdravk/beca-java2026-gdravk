@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 
 // tabela "transacoes" do banco transactions-db
 // os enums sao gravados pelo nome (EnumType.STRING), assim a ordem deles no codigo pode mudar sem estragar os dados
-// nenhuma coluna e "updatable = false" por regra de jpa, mas o sistema nunca altera uma transacao depois de gravada
+// nenhuma coluna e "updatable = false" por exigencia do jpa, mas o sistema nunca altera uma transacao depois de gravada
 @Entity
 @Table(name = "transacoes")
 public class TransacaoEntity {
@@ -34,7 +34,7 @@ public class TransacaoEntity {
     @Column(nullable = false, length = 20)
     private TipoTransacao tipo;
 
-    // valor em reais, ate 13 digitos inteiros e 2 decimais
+    // valor em reais, com ate 13 digitos inteiros e 2 decimais
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal valor;
 

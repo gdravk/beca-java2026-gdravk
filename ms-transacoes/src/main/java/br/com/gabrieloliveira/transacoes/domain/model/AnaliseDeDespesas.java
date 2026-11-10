@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 // o resultado de uma analise de despesas: o periodo usado, o total geral e as linhas do resumo
-// o <T> e o tipo das linhas: DespesaPorCategoria, DespesaPorDia ou DespesaPorMes
-// assim uma classe so serve pros tres resumos (isso se chama "classe generica", igual List<String>)
+// o <T> e o tipo das linhas (DespesaPorCategoria, DespesaPorDia ou DespesaPorMes); assim uma classe so
+// serve para os tres resumos (isso se chama "classe generica", igual a List<String>)
 public class AnaliseDeDespesas<T> {
 
     private final Long usuarioId;

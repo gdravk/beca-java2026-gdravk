@@ -17,14 +17,14 @@ public class BCryptSenhaEncoderAdapter implements SenhaEncoderPort {
 
     @Override
     public String codificar(String senhaPura) {
-        // o hash bcrypt nao tem volta: nem a gente consegue descobrir a senha original olhando o banco
+        // o hash do bcrypt nao tem volta: nem a gente consegue descobrir a senha original olhando o banco
         return passwordEncoder.encode(senhaPura);
     }
 
     @Override
     public boolean confere(String senhaPura, String hashGuardado) {
-        // matches le o "sal" que fica dentro do proprio hash bcrypt, gera o hash da senha digitada
-        // com esse mesmo sal e compara; por isso a mesma senha sempre "bate" com o hash guardado
+        // o matches le o "sal" que fica guardado dentro do proprio hash, gera o hash da senha digitada com esse
+        // mesmo sal e compara os dois; e por isso que a mesma senha sempre "bate" com o hash guardado
         return passwordEncoder.matches(senhaPura, hashGuardado);
     }
 }

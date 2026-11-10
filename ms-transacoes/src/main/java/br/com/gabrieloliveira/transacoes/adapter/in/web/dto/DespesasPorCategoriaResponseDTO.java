@@ -1,22 +1,30 @@
 package br.com.gabrieloliveira.transacoes.adapter.in.web.dto;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
 // resposta do GET /transactions/analysis/category
-// inicio e fim mostram o periodo que foi usado de verdade (quando o cliente nao manda, e o mes atual),
+// o inicio e o fim mostram o periodo usado de verdade (se o cliente nao mandar, e o mes atual),
 // assim quem le a resposta sabe exatamente a que periodo os totais se referem
 @JsonPropertyOrder({"usuarioId", "inicio", "fim", "quantidadeDespesas", "totalGeral", "categorias"})
+@Schema(description = "despesas do periodo agrupadas por categoria")
 public class DespesasPorCategoriaResponseDTO {
 
+    @Schema(description = "dono das despesas", example = "1")
     private Long usuarioId;
+    @Schema(description = "primeiro dia do periodo usado", example = "2026-11-01")
     private LocalDate inicio;
+    @Schema(description = "ultimo dia do periodo usado", example = "2026-11-30")
     private LocalDate fim;
+    @Schema(description = "quantas despesas entraram na conta", example = "5")
     private int quantidadeDespesas;
+    @Schema(description = "soma de todas as despesas do periodo, em reais", example = "250.00")
     private BigDecimal totalGeral;
+    @Schema(description = "uma linha por categoria, da que mais gastou para a que menos gastou")
     private List<DespesaPorCategoriaDTO> categorias;
 
     public DespesasPorCategoriaResponseDTO() {

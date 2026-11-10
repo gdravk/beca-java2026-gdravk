@@ -15,7 +15,7 @@ public class ExcluirUsuarioService implements ExcluirUsuarioUseCase {
 
     @Override
     public void excluir(Long id) {
-        // confere antes pra devolver 404 se nao existir, em vez de "excluir" algo que nem estava la
+        // confere antes, para devolver 404 em vez de "excluir" algo que nem existia
         if (usuarioRepositoryPort.buscarPorId(id).isEmpty()) {
             throw new RecursoNaoEncontradoException("usuario com id " + id + " nao encontrado");
         }

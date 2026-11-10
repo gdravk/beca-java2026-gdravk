@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-// converte entre os dtos http e a Transacao do dominio
-// tambem monta as conversoes de moeda da resposta a partir das taxas guardadas na transacao
+// traduz entre os dtos http e a Transacao do dominio
+// tambem monta as conversoes de moeda da resposta, a partir das taxas guardadas na transacao
 @Component
 public class TransacaoWebMapper {
 

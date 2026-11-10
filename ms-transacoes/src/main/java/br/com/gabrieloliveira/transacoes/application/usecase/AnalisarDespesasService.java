@@ -17,10 +17,10 @@ import java.util.List;
 // analise de despesas: quanto o usuario gastou por categoria, por dia e por mes
 //
 // os tres resumos seguem o mesmo caminho:
-// 1. resolve o periodo (sem datas = mes atual; inicio depois do fim = 400) -> Periodo
-// 2. busca as despesas do usuario nesse periodo no banco -> TransacaoRepositoryPort
-// 3. confere de novo a definicao de despesa e agrupa -> AnalisadorDeDespesas (dominio)
-// 4. devolve o periodo usado, o total geral e as linhas do resumo -> AnaliseDeDespesas
+// 1. resolve o periodo (sem datas = mes atual; inicio depois do fim = 400), com o Periodo
+// 2. busca as despesas do usuario nesse periodo no banco, pela TransacaoRepositoryPort
+// 3. confere de novo a definicao de despesa e agrupa, com o AnalisadorDeDespesas (dominio)
+// 4. devolve o periodo usado, o total geral e as linhas do resumo, numa AnaliseDeDespesas
 //
 // o agrupamento e feito aqui no java, e nao com "group by" no banco, porque:
 // - as regras ficam no dominio, faceis de testar sem banco
@@ -31,9 +31,9 @@ public class AnalisarDespesasService implements AnalisarDespesasUseCase {
     private final TransacaoRepositoryPort transacaoRepositoryPort;
     private final AnalisadorDeDespesas analisadorDeDespesas;
 
-    // o Clock e o "relogio" usado pra saber qual e o mes atual
-    // na aplicacao ele e o relogio do sistema; nos testes, um relogio parado numa data fixa
-    // (sem isso, o teste do "mes atual" daria resultado diferente a cada mes)
+    // o Clock e o "relogio" usado para saber qual e o mes atual
+    // na aplicacao ele e o relogio no fuso de brasilia (bean do BeanConfig); nos testes, um relogio parado
+    // numa data fixa (sem isso, o teste do "mes atual" daria um resultado diferente a cada mes)
     private final Clock relogio;
 
     public AnalisarDespesasService(TransacaoRepositoryPort transacaoRepositoryPort,
@@ -72,8 +72,8 @@ public class AnalisarDespesasService implements AnalisarDespesasUseCase {
         return Periodo.resolver(inicio, fim, LocalDate.now(relogio));
     }
 
-    // a consulta do banco ja traz so despesas; o filtro do dominio e uma segunda conferencia
-    // e garante a regra mesmo se um dia a porta for implementada por outro adaptador
+    // a consulta do banco ja traz so despesas; o filtro do dominio e uma segunda conferencia, que garante
+    // a regra mesmo se um dia a porta for implementada por outro adaptador
     private List<Transacao> buscarDespesas(Long usuarioId, Periodo periodo) {
         List<Transacao> encontradas = transacaoRepositoryPort.listarDespesas(usuarioId,
                 periodo.inicioDoPrimeiroDia(), periodo.inicioDoDiaSeguinteAoFim());
